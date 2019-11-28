@@ -1,0 +1,12 @@
+config          配置拦截器到项目中以及一些常用配置
+controller      对响应进行处理(提供接口)
+dao             Data Access Object（数据访问对象，DAO）即用来操作数据库的对象
+error           常见的错误页面
+interceptor     Interceptor 即拦截器
+pojo            实体类
+result          构造 response，主要是响应码
+service         操作数据
+
+
+
+

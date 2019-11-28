@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cn.phoenix.api.dao.TestResultMapper">
+    <resultMap id="resultMap" type="com.cn.phoenix.api.pojo.TestResult">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="host_id" jdbcType="INTEGER" property="hostId"/>
+        <result column="run_host_name" jdbcType="INTEGER" property="runHostName"/>
+        <result column="run_host" jdbcType="INTEGER" property="runHost"/>
+        <result column="apiId" jdbcType="INTEGER" property="apiId"/>
+        <result column="path" jdbcType="INTEGER" property="path"/>
+        <result column="caseId" jdbcType="INTEGER" property="caseId"/>
+        <result column="responseTime" jdbcType="VARCHAR" property="responseTime"/>
+        <result column="pass" jdbcType="INTEGER" property="pass"/>
+        <result column="apiName" jdbcType="VARCHAR" property="apiName"/>
+        <result column="caseName" jdbcType="VARCHAR" property="caseName"/>
+        <result column="parameter" jdbcType="VARCHAR" property="parameter"/>
+        <result column="result" jdbcType="VARCHAR" property="result"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <result column="start_time" jdbcType="TIMESTAMP" property="startTime"/>
+        <result column="end_time" jdbcType="TIMESTAMP" property="endTime"/>
+    </resultMap>
+
+    <select id="selectResult" parameterType="com.cn.phoenix.api.pojo.TestResult" resultMap="resultMap">
+        SELECT
+        h.id host_id,h.run_host,h.run_name run_host_name,
+        a.name apiName,a.path,
+        c.name caseName,
+        p.json_str parameter,
+        r.response_time responseTime,r.id,r.result result,r.create_time,r.update_time
+        FROM
+        result r
+        LEFT JOIN api a ON r.api_id = a.id
+        LEFT JOIN cases c ON r.case_id = c.id
+        LEFT JOIN parameter p ON c.id = p.case_id
+        LEFT JOIN host h ON r.host_id = h.id
+        where 1=1
+        <if test="apiId != null">
+             and a.id = #{apiId}
+            <if test="caseId != null">
+                and c.id = #{caseId}
+            </if>
+        </if>
+        <if test="startTime != null and endTime != null">
+            and r.create_time between #{startTime} and #{endTime}
+        </if>
+        order by r.id desc
+    </select>
+    <insert id="insertResult" parameterType="com.cn.phoenix.api.pojo.TestResult">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into result
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="apiId != null">
+                api_id,
+            </if>
+            <if test="caseId != null">
+                case_id,
+            </if>
+            <if test="responseTime != null">
+                response_time,
+            </if>
+            <if test="pass != null">
+                pass,
+            </if>
+            <if test="result != null">
+                result,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="apiId != null">
+                #{apiId,jdbcType=INTEGER},
+            </if>
+            <if test="caseId != null">
+                #{caseId,jdbcType=INTEGER},
+            </if>
+            <if test="responseTime != null">
+                #{responseTime,jdbcType=VARCHAR},
+            </if>
+            <if test="pass != null">
+                #{pass,jdbcType=INTEGER},
+            </if>
+            <if test="result != null">
+                #{result,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <insert id="batchInsertSelective" parameterType="com.cn.phoenix.api.pojo.TestResult">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into result (api_id,case_id,pass,response_time,result) values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.apiId},#{item.caseId},#{item.pass},#{item.responseTime},#{item.result})
+        </foreach>
+    </insert>
+
+</mapper>

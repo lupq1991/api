@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cn.phoenix.api.dao.CasesMapper">
+    <resultMap id="BaseResultMap" type="com.cn.phoenix.api.pojo.Cases">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="api_id" jdbcType="INTEGER" property="apiId"/>
+        <result column="request" jdbcType="INTEGER" property="request"/>
+        <result column="content" jdbcType="INTEGER" property="content"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="info" jdbcType="VARCHAR" property="info"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <association property="check" javaType="com.cn.phoenix.api.pojo.Check" column="check">
+            <id column="check_id" jdbcType="INTEGER" property="id"/>
+            <result column="check_case_id" jdbcType="INTEGER" property="caseId"/>
+            <result column="type" jdbcType="INTEGER" property="type"/>
+            <result column="status_code" jdbcType="INTEGER" property="statusCode"/>
+            <result column="content_type" jdbcType="INTEGER" property="contentType"/>
+            <result column="check_content" jdbcType="VARCHAR" property="content"/>
+            <result column="regular_key" jdbcType="VARCHAR" property="regularKey"/>
+            <result column="regular_value" jdbcType="VARCHAR" property="regularValue"/>
+            <result column="check_create_time" jdbcType="TIMESTAMP" property="createTime"/>
+            <result column="check_update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        </association>
+        <collection property="parameter" ofType="com.cn.phoenix.api.pojo.Parameter" column="parameter">
+            <id column="parameter_id" jdbcType="INTEGER" property="id"/>
+            <result column="case_id" jdbcType="INTEGER" property="caseId"/>
+            <result column="p_key" jdbcType="VARCHAR" property="pKey"/>
+            <result column="p_value" jdbcType="VARCHAR" property="pValue"/>
+            <result column="json_str" jdbcType="VARCHAR" property="jsonStr"/>
+            <result column="parameter_info" jdbcType="VARCHAR" property="info"/>
+            <result column="parameter_create_time" jdbcType="TIMESTAMP" property="createTime"/>
+            <result column="parameter_update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        </collection>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, `name`, api_id, request, content, status, info, create_time, update_time
+  </sql>
+    <select id="findCaseAndParameter" resultMap="BaseResultMap">
+        select
+        c.id, c.name, c.api_id, c.request, c.content, c.status, c.info, c.create_time, c.update_time,
+        p.id parameter_id,p.case_id,p.p_key,p.p_value,p.json_str,p.info parameter_info,p.create_time
+        parameter_create_time,p.update_time parameter_update_time,
+        ch.id check_id,ch.case_id check_case_id,ch.type,ch.status_code,ch.content_type,ch.content check_content,ch.regular_key,ch.regular_value
+        from cases c
+        left join parameter p on c.id = p.case_id
+        left join `check` ch on c.id = ch.case_id
+        <if test="apiId != null">
+            where api_id = #{apiId,jdbcType=INTEGER}
+        </if>
+        group by c.id
+        order by c.id desc
+
+    </select>
+    <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from cases
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from cases
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+    <insert id="insert" parameterType="com.cn.phoenix.api.pojo.Cases">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into cases (name, api_id, request,
+        content, status, info)
+        values (#{name,jdbcType=VARCHAR}, #{apiId,jdbcType=INTEGER}, #{request,jdbcType=INTEGER},
+        #{content,jdbcType=INTEGER}, #{status,jdbcType=INTEGER}, #{info,jdbcType=VARCHAR})
+    </insert>
+    <insert id="insertSelective" parameterType="com.cn.phoenix.api.pojo.Cases">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into cases
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="name != null">
+                name,
+            </if>
+            <if test="apiId != null">
+                api_id,
+            </if>
+            <if test="request != null">
+                request,
+            </if>
+            <if test="content != null">
+                content,
+            </if>
+            <if test="status != null">
+                status,
+            </if>
+            <if test="info != null">
+                info,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="name != null">
+                #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="apiId != null">
+                #{apiId,jdbcType=INTEGER},
+            </if>
+            <if test="request != null">
+                #{request,jdbcType=INTEGER},
+            </if>
+            <if test="content != null">
+                #{content,jdbcType=INTEGER},
+            </if>
+            <if test="status != null">
+                #{status,jdbcType=INTEGER},
+            </if>
+            <if test="info != null">
+                #{info,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+    <update id="updateByPrimaryKeySelective" parameterType="com.cn.phoenix.api.pojo.Cases">
+        update cases
+        <set>
+            <if test="name != null">
+                name = #{name,jdbcType=VARCHAR},
+            </if>
+            <if test="apiId != null">
+                api_id = #{apiId,jdbcType=INTEGER},
+            </if>
+            <if test="request != null">
+                request = #{request,jdbcType=INTEGER},
+            </if>
+            <if test="content != null">
+                content = #{content,jdbcType=INTEGER},
+            </if>
+            <if test="status != null">
+                status = #{status,jdbcType=INTEGER},
+            </if>
+            <if test="info != null">
+                info = #{info,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+    <update id="updateByPrimaryKey" parameterType="com.cn.phoenix.api.pojo.Cases">
+    update cases
+    set name = #{name,jdbcType=VARCHAR},
+      api_id = #{apiId,jdbcType=INTEGER},
+      request = #{request,jdbcType=INTEGER},
+      content = #{content,jdbcType=INTEGER},
+      status = #{status,jdbcType=INTEGER},
+      info = #{info,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+    <select id="findAll" resultType="com.cn.phoenix.api.pojo.Cases">
+        select
+        <include refid="Base_Column_List"/>
+        from cases
+    </select>
+    <select id="findCasesByApiId" resultType="com.cn.phoenix.api.pojo.Cases">
+        select
+        <include refid="Base_Column_List"/>
+        from cases
+        <if test="apiId != null">
+            where api_id = #{apiId,jdbcType=INTEGER}
+        </if>
+    </select>
+</mapper>

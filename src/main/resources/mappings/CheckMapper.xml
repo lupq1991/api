@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cn.phoenix.api.dao.CheckMapper">
+    <resultMap id="BaseResultMap" type="com.cn.phoenix.api.pojo.Check">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="case_id" jdbcType="INTEGER" property="caseId"/>
+        <result column="type" jdbcType="INTEGER" property="type"/>
+        <result column="status_code" jdbcType="INTEGER" property="statusCode"/>
+        <result column="content_type" jdbcType="INTEGER" property="contentType"/>
+        <result column="content" jdbcType="VARCHAR" property="content"/>
+        <result column="regular_key" jdbcType="VARCHAR" property="regularKey"/>
+        <result column="regular_value" jdbcType="VARCHAR" property="regularValue"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, case_id, `type`, status_code, content_type,content,regular_key,regular_value, create_time, update_time
+  </sql>
+    <select id="selectByCaseId" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from `check`
+        where case_id = #{caseId,jdbcType=INTEGER}
+    </select>
+    <insert id="insert" parameterType="com.cn.phoenix.api.pojo.Check">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into `check` (case_id, `type`, status_code, content_type,content,regular_key,regular_value)
+        values
+        (#{caseId,jdbcType=INTEGER}, #{type,jdbcType=INTEGER}, #{statusCode,jdbcType=INTEGER},
+        #{contentType,jdbcType=INTEGER}, #{content,jdbcType=VARCHAR}, #{regularKey,jdbcType=VARCHAR}, #{regularValue,jdbcType=VARCHAR})
+    </insert>
+    <update id="update" parameterType="com.cn.phoenix.api.pojo.Check">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        update `check` set
+        `type` =  #{type,jdbcType=INTEGER},status_code = #{statusCode,jdbcType=INTEGER},
+        content_type = #{contentType,jdbcType=INTEGER}, content = #{content,jdbcType=VARCHAR},
+        regular_key = #{regularKey,jdbcType=VARCHAR}, regular_value = #{regularValue,jdbcType=VARCHAR}
+        where id = #{id}
+    </update>
+</mapper>

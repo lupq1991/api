@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cn.phoenix.api.dao.VariableMapper">
+    <resultMap id="BaseResultMap" type="com.cn.phoenix.api.pojo.Variable">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="case_id" jdbcType="INTEGER" property="caseId"/>
+        <result column="v_key" jdbcType="VARCHAR" property="vKey"/>
+        <result column="v_value" jdbcType="VARCHAR" property="vValue"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="info" jdbcType="VARCHAR" property="info"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, case_id, v_key, v_value, status, info, create_time, update_time
+  </sql>
+
+    <insert id="batchInsert" parameterType="com.cn.phoenix.api.pojo.Variable">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into variable (case_id,v_key,v_value,status,info) values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.caseId,jdbcType=INTEGER},#{item.vKey,jdbcType=VARCHAR},
+            #{item.vValue,jdbcType=VARCHAR},#{item.status,jdbcType=INTEGER},#{item.info,jdbcType=VARCHAR})
+        </foreach>
+    </insert>
+    <update id="batchUpdate" parameterType="com.cn.phoenix.api.pojo.Variable">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        update variable
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="v_key =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.vKey!=null">
+                        when id=#{i.id} then #{i.vKey}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="v_value =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.vValue!=null">
+                        when id=#{i.id} then #{i.vValue}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="status =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.status !=null">
+                        when id=#{i.id} then #{i.status}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="info =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.info!=null">
+                        when id=#{i.id} then #{i.info}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where
+        <foreach collection="list" item="idItem" index="index" open="" close="" separator="or">
+            id = #{idItem.id,jdbcType=INTEGER}
+        </foreach>
+    </update>
+    <delete id="batchDelete" parameterType="com.cn.phoenix.api.pojo.Variable">
+        delete from variable where id in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+    </delete>
+    <select id="selectByKey" resultType="com.cn.phoenix.api.pojo.Variable">
+        select
+        <include refid="Base_Column_List"/>
+        from variable where v_key = #{vKey}
+    </select>
+    <select id="selectOnlyKey" resultType="com.cn.phoenix.api.pojo.Variable">
+        select
+        <include refid="Base_Column_List"/>
+        from variable where v_key = #{vKey} and id != #{id}
+    </select>
+    <select id="select" resultType="com.cn.phoenix.api.pojo.Variable">
+        select
+        id, case_id, v_key, v_value, status, info, create_time, update_time
+        from variable
+    </select>
+    <insert id="oneInsert" parameterType="com.cn.phoenix.api.pojo.Variable">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into variable (case_id,v_key,v_value,status,info)
+        values
+        (#{caseId,jdbcType=INTEGER},#{vKey,jdbcType=VARCHAR},#{vValue,jdbcType=VARCHAR},#{status,jdbcType=INTEGER},#{info,jdbcType=VARCHAR})
+    </insert>
+    <update id="oneUpdate" parameterType="com.cn.phoenix.api.pojo.Variable">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        update variable set v_key = #{vKey,jdbcType=VARCHAR},v_value = #{vValue,jdbcType=VARCHAR},status =
+        #{status,jdbcType=INTEGER},info = #{info,jdbcType=VARCHAR}
+        where id = #{id}
+    </update>
+    <delete id="oneDelete" parameterType="com.cn.phoenix.api.pojo.Variable">
+        delete from variable where id = #{id}
+    </delete>
+    <select id="selectNoCaseId" resultType="com.cn.phoenix.api.pojo.Variable">
+        select
+        <include refid="Base_Column_List"/>
+        from variable where case_id is null
+    </select>
+    <select id="selectHaveCaseId" resultType="com.cn.phoenix.api.pojo.Variable">
+        select
+        <include refid="Base_Column_List"/>
+        from variable where case_id is not null
+    </select>
+</mapper>

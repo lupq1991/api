@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cn.phoenix.api.dao.HeaderMapper">
+    <resultMap id="BaseResultMap" type="com.cn.phoenix.api.pojo.Header">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="h_key" jdbcType="VARCHAR" property="hKey"/>
+        <result column="h_value" jdbcType="VARCHAR" property="hValue"/>
+        <result column="case_id" jdbcType="INTEGER" property="caseId"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="info" jdbcType="VARCHAR" property="info"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id,case_id, h_key, h_value, status, info, create_time, update_time
+  </sql>
+    <select id="selectByCaseId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from header
+        <if test="caseId != null">
+            where case_id = #{caseId}
+        </if>
+    </select>
+    <insert id="batchInsert" parameterType="com.cn.phoenix.api.pojo.Header">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into header (h_key,h_value,status,info,case_id) values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.hKey},#{item.hValue}
+            ,#{item.status}
+            ,#{item.info}
+            ,#{item.caseId})
+        </foreach>
+    </insert>
+
+    <update id="batchUpdate" parameterType="com.cn.phoenix.api.pojo.Header">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        update header
+        <trim prefix="set" suffixOverrides=",">
+            <trim prefix="h_key =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.hKey!=null">
+                        when id=#{i.id} then #{i.hKey}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="h_value =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.hValue!=null">
+                        when id=#{i.id} then #{i.hValue}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="status =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.status !=null">
+                        when id=#{i.id} then #{i.status}
+                    </if>
+                </foreach>
+            </trim>
+            <trim prefix="info =case" suffix="end,">
+                <foreach collection="list" item="i" index="index">
+                    <if test="i.info!=null">
+                        when id=#{i.id} then #{i.info}
+                    </if>
+                </foreach>
+            </trim>
+        </trim>
+        where
+        <foreach collection="list" item="idItem" index="index" open="" close="" separator="or">
+            id = #{idItem.id,jdbcType=INTEGER}
+        </foreach>
+    </update>
+    <delete id="batchDelete" parameterType="com.cn.phoenix.api.pojo.Header">
+        delete from header where id in
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+    </delete>
+</mapper>

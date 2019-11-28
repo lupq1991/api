@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cn.phoenix.api.dao.HostMapper">
+  <resultMap id="BaseResultMap" type="com.cn.phoenix.api.pojo.Host">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="run_host" jdbcType="VARCHAR" property="runHost" />
+    <result column="run_name" jdbcType="VARCHAR" property="runName" />
+    <result column="group_id" jdbcType="INTEGER" property="groupId" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, run_host, run_name, group_id, status, create_time, update_time
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from host
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <select id="findRunHost" resultType="com.cn.phoenix.api.pojo.Host">
+        SELECT id,run_host,run_name,group_id,status,create_time,update_time
+        FROM host
+        order by id desc
+    </select>
+  <select id="findHostByRunHost" resultType="com.cn.phoenix.api.pojo.Host">
+    select id,run_host,run_name FROM host where run_host = #{runHost}
+  </select>
+  <select id="checkUnique" resultType="com.cn.phoenix.api.pojo.Host">
+    select id,run_name,run_host from host where id != #{id} and run_host = #{runHost}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from host
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="com.cn.phoenix.api.pojo.Host">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into host (run_host, run_name)
+    values (#{runHost,jdbcType=VARCHAR}, #{runName,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.cn.phoenix.api.pojo.Host">
+    <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into host
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="runHost != null">
+        run_host,
+      </if>
+      <if test="runName != null">
+        run_name,
+      </if>
+      <if test="groupId != null">
+        group_id,
+      </if>
+      <if test="status != null">
+        status,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="runHost != null">
+        #{runHost,jdbcType=VARCHAR},
+      </if>
+      <if test="runName != null">
+        #{runName,jdbcType=VARCHAR},
+      </if>
+      <if test="groupId != null">
+        #{groupId,jdbcType=INTEGER},
+      </if>
+      <if test="status != null">
+        #{status,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.cn.phoenix.api.pojo.Host">
+    update host
+    <set>
+      <if test="runHost != null">
+        run_host = #{runHost,jdbcType=VARCHAR},
+      </if>
+      <if test="runName != null">
+        run_name = #{runName,jdbcType=VARCHAR},
+      </if>
+      <if test="groupId != null">
+        group_id = #{groupId,jdbcType=INTEGER},
+      </if>
+      <if test="status != null">
+        status = #{status,jdbcType=INTEGER},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.cn.phoenix.api.pojo.Host">
+    update host
+    set run_host = #{runHost,jdbcType=VARCHAR},
+      run_name = #{runName,jdbcType=VARCHAR},
+      group_id = #{groupId,jdbcType=INTEGER},
+      status = #{status,jdbcType=INTEGER},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      update_time = #{updateTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>
