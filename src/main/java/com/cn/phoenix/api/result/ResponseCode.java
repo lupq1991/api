@@ -1,12 +1,6 @@
 package com.cn.phoenix.api.result;
 
-/**
- * @author ethan
- * @version V1.0
- * @Title ResponseCode
- * @Description
- * @date 2016年8月10日
- */
+
 public enum ResponseCode {
 
     /* (code,message,httpCode)
@@ -35,6 +29,7 @@ public enum ResponseCode {
     DATA_NULL(400, "数据不存在:"),
     DATA_LINKED(400, "存在关联数据:"),
     DATA_ERROR(400,"数据不合法:"),
+    DATA_CUSTOM(400,""),
 
 
 

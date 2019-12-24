@@ -8,6 +8,12 @@
         <result column="request" jdbcType="INTEGER" property="request"/>
         <result column="content" jdbcType="INTEGER" property="content"/>
         <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="md5_enc" jdbcType="VARCHAR" property="md5Encryption"/>
+        <result column="aes_enc" jdbcType="VARCHAR" property="aesEncryption"/>
+        <result column="aes_dec" jdbcType="VARCHAR" property="aesDecryption"/>
+        <result column="is_result_variable" jdbcType="VARCHAR" property="isResultVariableString"/>
+        <result column="is_use_result" jdbcType="INTEGER" property="isUseResult"/>
+        <result column="use_result_case_name" jdbcType="INTEGER" property="useResultCaseName"/>
         <result column="info" jdbcType="VARCHAR" property="info"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
         <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
@@ -26,8 +32,8 @@
         <collection property="parameter" ofType="com.cn.phoenix.api.pojo.Parameter" column="parameter">
             <id column="parameter_id" jdbcType="INTEGER" property="id"/>
             <result column="case_id" jdbcType="INTEGER" property="caseId"/>
-            <result column="p_key" jdbcType="VARCHAR" property="pKey"/>
-            <result column="p_value" jdbcType="VARCHAR" property="pValue"/>
+            <result column="parameter_key" jdbcType="VARCHAR" property="key"/>
+            <result column="parameter_value" jdbcType="VARCHAR" property="value"/>
             <result column="json_str" jdbcType="VARCHAR" property="jsonStr"/>
             <result column="parameter_info" jdbcType="VARCHAR" property="info"/>
             <result column="parameter_create_time" jdbcType="TIMESTAMP" property="createTime"/>
@@ -35,43 +41,53 @@
         </collection>
     </resultMap>
     <sql id="Base_Column_List">
-    id, `name`, api_id, request, content, status, info, create_time, update_time
+    id, `name`, api_id, request, content, status, info, create_time, update_time,
+    md5_enc,aes_enc,aes_dec,is_result_variable,is_use_result
   </sql>
-    <select id="findCaseAndParameter" resultMap="BaseResultMap">
+    <select id="findCaseAndParameter" resultMap="BaseResultMap" resultType="com.cn.phoenix.api.pojo.Cases">
         select
         c.id, c.name, c.api_id, c.request, c.content, c.status, c.info, c.create_time, c.update_time,
-        p.id parameter_id,p.case_id,p.p_key,p.p_value,p.json_str,p.info parameter_info,p.create_time
+        c.md5_enc,c.aes_enc,c.aes_dec,c.is_result_variable,c.is_use_result,c1.name use_result_case_name,
+        p.id parameter_id,p.case_id,p.key parameter_key,p.value parameter_value,p.json_str,p.info
+        parameter_info,p.create_time
         parameter_create_time,p.update_time parameter_update_time,
-        ch.id check_id,ch.case_id check_case_id,ch.type,ch.status_code,ch.content_type,ch.content check_content,ch.regular_key,ch.regular_value
+        ch.id check_id,ch.case_id check_case_id,ch.type,ch.status_code,ch.content_type,ch.content
+        check_content,ch.regular_key,ch.regular_value
         from cases c
         left join parameter p on c.id = p.case_id
         left join `check` ch on c.id = ch.case_id
+        left join cases c1 on c.is_use_result = c1.id
+        left join api a on a.id = c.api_id
+        where a.project_id in
+        <foreach collection="projectIdList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
         <if test="apiId != null">
-            where api_id = #{apiId,jdbcType=INTEGER}
+            and c.api_id = #{apiId,jdbcType=INTEGER}
         </if>
         group by c.id
         order by c.id desc
 
     </select>
-    <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    <select id="selectById" parameterType="java.lang.Integer" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
         from cases
         where id = #{id,jdbcType=INTEGER}
     </select>
-    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    <select id="selectRelatedCaseByid" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from cases
+        where is_result_variable is not null
+        <if test="id != null">
+            and id &lt; #{id}
+        </if>
+    </select>
+    <delete id="deleteById" parameterType="java.lang.Integer">
     delete from cases
     where id = #{id,jdbcType=INTEGER}
   </delete>
-    <insert id="insert" parameterType="com.cn.phoenix.api.pojo.Cases">
-        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
-            SELECT LAST_INSERT_ID()
-        </selectKey>
-        insert into cases (name, api_id, request,
-        content, status, info)
-        values (#{name,jdbcType=VARCHAR}, #{apiId,jdbcType=INTEGER}, #{request,jdbcType=INTEGER},
-        #{content,jdbcType=INTEGER}, #{status,jdbcType=INTEGER}, #{info,jdbcType=VARCHAR})
-    </insert>
     <insert id="insertSelective" parameterType="com.cn.phoenix.api.pojo.Cases">
         <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
             SELECT LAST_INSERT_ID()
@@ -93,6 +109,21 @@
             <if test="status != null">
                 status,
             </if>
+            <if test="md5Encryption != null">
+                md5_enc,
+            </if>
+            <if test="aesEncryption != null">
+                aes_enc,
+            </if>
+            <if test="aesDecryption != null">
+                aes_dec,
+            </if>
+            <if test="isResultVariableString != null">
+                is_result_variable,
+            </if>
+            <if test="isUseResult != null">
+                is_use_result,
+            </if>
             <if test="info != null">
                 info,
             </if>
@@ -113,50 +144,41 @@
             <if test="status != null">
                 #{status,jdbcType=INTEGER},
             </if>
+            <if test="md5Encryption != null">
+                #{md5Encryption},
+            </if>
+            <if test="aesEncryption != null">
+                #{aesEncryption},
+            </if>
+            <if test="aesDecryption != null">
+                #{aesDecryption},
+            </if>
+            <if test="isResultVariableString != null">
+                #{isResultVariableString},
+            </if>
+            <if test="isUseResult != null">
+                #{isUseResult},
+            </if>
             <if test="info != null">
                 #{info,jdbcType=VARCHAR},
             </if>
         </trim>
     </insert>
-    <update id="updateByPrimaryKeySelective" parameterType="com.cn.phoenix.api.pojo.Cases">
-        update cases
-        <set>
-            <if test="name != null">
-                name = #{name,jdbcType=VARCHAR},
-            </if>
-            <if test="apiId != null">
-                api_id = #{apiId,jdbcType=INTEGER},
-            </if>
-            <if test="request != null">
-                request = #{request,jdbcType=INTEGER},
-            </if>
-            <if test="content != null">
-                content = #{content,jdbcType=INTEGER},
-            </if>
-            <if test="status != null">
-                status = #{status,jdbcType=INTEGER},
-            </if>
-            <if test="info != null">
-                info = #{info,jdbcType=VARCHAR},
-            </if>
-        </set>
-        where id = #{id,jdbcType=INTEGER}
-    </update>
-    <update id="updateByPrimaryKey" parameterType="com.cn.phoenix.api.pojo.Cases">
+    <update id="updateById" parameterType="com.cn.phoenix.api.pojo.Cases">
     update cases
     set name = #{name,jdbcType=VARCHAR},
       api_id = #{apiId,jdbcType=INTEGER},
       request = #{request,jdbcType=INTEGER},
       content = #{content,jdbcType=INTEGER},
       status = #{status,jdbcType=INTEGER},
-      info = #{info,jdbcType=VARCHAR}
+      info = #{info,jdbcType=VARCHAR},
+      md5_enc = #{md5Encryption},
+      aes_enc = #{aesEncryption},
+      aes_dec = #{aesDecryption},
+      is_result_variable = #{isResultVariableString},
+      is_use_result = #{isUseResult}
     where id = #{id,jdbcType=INTEGER}
   </update>
-    <select id="findAll" resultType="com.cn.phoenix.api.pojo.Cases">
-        select
-        <include refid="Base_Column_List"/>
-        from cases
-    </select>
     <select id="findCasesByApiId" resultType="com.cn.phoenix.api.pojo.Cases">
         select
         <include refid="Base_Column_List"/>

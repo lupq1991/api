@@ -25,12 +25,19 @@ class BaseController<T> {
         APIResponse<ItemsPojo> apiResponse = APIResponse.getSuccResponse();
         ItemsPojo<T> itemsPojo = new ItemsPojo<>();
 
-        itemsPojo.setPage(page);
-        itemsPojo.setLimit(limit);
-
+        if (page != null && limit != null) {
+            itemsPojo.setPage(page);
+            itemsPojo.setLimit(limit);
+        }
         if (list != null) {
-            long total = ((Page<T>) list).getTotal();
-            itemsPojo.setTotal(total);
+            long total = 0;
+            if (page != null && limit != null) {
+                total = ((Page<T>) list).getTotal();
+                itemsPojo.setTotal(total);
+            } else {
+                itemsPojo.setTotal(list.size());
+            }
+
             itemsPojo.setItems(list);
             apiResponse.setData(itemsPojo);
             return apiResponse;
@@ -39,4 +46,5 @@ class BaseController<T> {
         apiResponse.setData(itemsPojo);
         return apiResponse;
     }
+
 }

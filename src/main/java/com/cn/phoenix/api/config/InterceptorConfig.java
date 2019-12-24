@@ -13,7 +13,7 @@ public class InterceptorConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         //拦截所有请求，判断是否有@UserLoginToken注解，决定是否需要验证
-        registry.addInterceptor(authenticationInterceptor()).addPathPatterns("/*/*");
+        registry.addInterceptor(authenticationInterceptor()).addPathPatterns("/**");
     }
 
 

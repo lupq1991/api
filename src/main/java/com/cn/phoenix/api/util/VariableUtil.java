@@ -1,6 +1,7 @@
 package com.cn.phoenix.api.util;
 
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.Map;
@@ -23,7 +24,7 @@ public class VariableUtil {
      * @param
      * @return
      */
-    public String replaceVariables(String parameter, Map<String, String> variableNameAndValueMap) {
+    public static String replaceVariables(String parameter, Map<String, String> variableNameAndValueMap) {
         //判断本次拿到的参数与上次参数如果不一样，就将调用数归0
         if (!parameter.equalsIgnoreCase(parameterSave)) {
             count = 0;
@@ -33,18 +34,22 @@ public class VariableUtil {
         Set<String> variableNames = variableNameAndValueMap.keySet();
         for (String variableName : variableNames) {
             //参数如果没有匹配到 { 就返回值
-            if (!parameter.contains("{")) {
+            if (!parameter.contains("${")) {
                 return parameter;
             }
             // 判断，如果测试数据出现了变量名
             if (parameter.contains(variableName)) {
                 String variableValue = variableNameAndValueMap.get(variableName);
-                String[] value = variableValue.split(",");
-                int length = value.length;
-                if (count + 1 > length) {
-                    parameter = parameter.replace(variableName, value[0]);
+                if (StringUtils.isBlank(variableValue)) {
+                    parameter = parameter.replace(variableName, "");
+                } else {
+                    String[] value = variableValue.split(",");
+                    int length = value.length;
+                    if (count + 1 > length) {
+                        parameter = parameter.replace(variableName, value[0]);
+                    }
+                    parameter = parameter.replace(variableName, value[count % length]);
                 }
-                parameter = parameter.replace(variableName, value[count % length]);
             }
         }
         count++;

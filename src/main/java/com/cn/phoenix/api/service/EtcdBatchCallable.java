@@ -41,10 +41,7 @@ public class EtcdBatchCallable implements Callable<HttpPojo> {
 
     @Override
     public HttpPojo call() {
-
-        HttpPojo httpPojo = HttpUtil.doService(url, requestType, contentType, params, headerMap);
-
-        return httpPojo;
+        return HttpUtil.doService(url, requestType, contentType, params, headerMap);
     }
 
 

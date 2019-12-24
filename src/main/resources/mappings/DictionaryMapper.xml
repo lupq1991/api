@@ -6,13 +6,13 @@
         <result column="name" jdbcType="VARCHAR" property="name"/>
         <result column="pId" jdbcType="INTEGER" property="pId"/>
         <result column="category" jdbcType="VARCHAR" property="category"/>
-        <result column="dKey" jdbcType="VARCHAR" property="dKey"/>
-        <result column="dValue" jdbcType="VARCHAR" property="dValue"/>
+        <result column="key" jdbcType="VARCHAR" property="key"/>
+        <result column="value" jdbcType="VARCHAR" property="value"/>
         <result column="orderNo" jdbcType="INTEGER" property="orderNo"/>
         <result column="description" jdbcType="VARCHAR" property="description"/>
     </resultMap>
     <sql id="Base_Column_List">
-    id, `name`, p_id, category, d_key, d_value, order_no, description
+    id, `name`, p_id, category, `key`, `value`, order_no, description
   </sql>
     <select id="findDictByCategory" resultType="com.cn.phoenix.api.pojo.Dictionary">
         select
@@ -24,6 +24,6 @@
         select
         `name`
         from dictionary
-        where p_id = (SELECT id FROM dictionary WHERE category = #{category}) and d_value = #{dValue}
+        where p_id = (SELECT id FROM dictionary WHERE category = #{category}) and `value` = #{value}
     </select>
 </mapper>

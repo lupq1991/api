@@ -10,11 +10,17 @@
         <result column="path" jdbcType="INTEGER" property="path"/>
         <result column="caseId" jdbcType="INTEGER" property="caseId"/>
         <result column="responseTime" jdbcType="VARCHAR" property="responseTime"/>
+        <result column="check" jdbcType="VARCHAR" property="check"/>
         <result column="pass" jdbcType="INTEGER" property="pass"/>
         <result column="apiName" jdbcType="VARCHAR" property="apiName"/>
+        <result column="batch_id" jdbcType="VARCHAR" property="batchId"/>
         <result column="caseName" jdbcType="VARCHAR" property="caseName"/>
         <result column="parameter" jdbcType="VARCHAR" property="parameter"/>
+        <result column="parameter_variable" jdbcType="VARCHAR" property="parameterVariable"/>
+        <result column="parameter_md5" jdbcType="VARCHAR" property="parameterMD5"/>
+        <result column="parameter_aes" jdbcType="VARCHAR" property="parameterAES"/>
         <result column="result" jdbcType="VARCHAR" property="result"/>
+        <result column="result_decryption" jdbcType="VARCHAR" property="resultDecryption"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
         <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
         <result column="start_time" jdbcType="TIMESTAMP" property="startTime"/>
@@ -27,14 +33,20 @@
         a.name apiName,a.path,
         c.name caseName,
         p.json_str parameter,
-        r.response_time responseTime,r.id,r.result result,r.create_time,r.update_time
+        r.response_time responseTime,r.id,r.pass,r.batch_id,r.check,
+        r.parameter_variable,r.parameter_md5,r.parameter_aes,
+        r.result result,r.result_dec result_decryption,
+        r.create_time,r.update_time
         FROM
         result r
         LEFT JOIN api a ON r.api_id = a.id
         LEFT JOIN cases c ON r.case_id = c.id
         LEFT JOIN parameter p ON c.id = p.case_id
         LEFT JOIN host h ON r.host_id = h.id
-        where 1=1
+        where a.project_id in
+        <foreach collection="projectIdList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
         <if test="apiId != null">
              and a.id = #{apiId}
             <if test="caseId != null">
@@ -43,6 +55,9 @@
         </if>
         <if test="startTime != null and endTime != null">
             and r.create_time between #{startTime} and #{endTime}
+        </if>
+        <if test="pass != null">
+            and r.pass = #{pass}
         </if>
         order by r.id desc
     </select>
@@ -90,9 +105,36 @@
         <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
             SELECT LAST_INSERT_ID()
         </selectKey>
-        insert into result (api_id,case_id,pass,response_time,result) values
+        insert into result
+        (
+        host_id,
+        api_id,
+        case_id,
+        pass,
+        response_time,
+        parameter_variable,
+        parameter_md5,
+        parameter_aes,
+        result,
+        result_dec,
+        batch_id,
+        `check`
+        ) values
         <foreach collection="list" item="item" index="index" separator=",">
-            (#{item.apiId},#{item.caseId},#{item.pass},#{item.responseTime},#{item.result})
+            (
+            #{item.hostId},
+            #{item.apiId},
+            #{item.caseId},
+            #{item.pass},
+            #{item.responseTime},
+            #{item.parameterVariable},
+            #{item.parameterMD5},
+            #{item.parameterAES},
+            #{item.result},
+            #{item.resultDecryption},
+            #{item.batchId},
+            #{item.check}
+            )
         </foreach>
     </insert>
 

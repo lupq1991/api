@@ -14,7 +14,7 @@ public class RegexUtil {
         if (matcher.find()) {
             return matcher.group(1);
         } else {
-            return "";
+            return "正则表达式未提取到数据";
         }
     }
 

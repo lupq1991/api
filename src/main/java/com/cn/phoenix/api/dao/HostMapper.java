@@ -13,7 +13,9 @@ public interface HostMapper {
 
     int insertSelective(Host record);
 
-    Host selectByPrimaryKey(Integer id);
+    Host selectById(Integer id);
+
+    Host selectHostAndConfigByHostId(Integer id);
 
     int updateByPrimaryKeySelective(Host record);
 
@@ -21,7 +23,7 @@ public interface HostMapper {
 
     List<Host> findHostByRunHost(String runHost);
 
-    List<Host> findRunHost();
+    List<Host> findRunHost(Host host);
 
     List<Host> checkUnique(Host host);
 }

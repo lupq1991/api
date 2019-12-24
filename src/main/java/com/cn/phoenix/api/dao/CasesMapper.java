@@ -8,22 +8,17 @@ import java.util.List;
 
 @Mapper
 public interface CasesMapper {
-    int deleteByPrimaryKey(Integer id);
-
-    int insert(Cases record);
+    int deleteById(Integer id);
 
     int insertSelective(Cases record);
 
-    Cases selectByPrimaryKey(Integer id);
+    Cases selectById(Integer id);
 
-    int updateByPrimaryKeySelective(Cases record);
-
-    int updateByPrimaryKey(Cases record);
-
-    List<Cases> findAll();
-
+    int updateById(Cases cases);
 
     List<Cases> findCasesByApiId(@Param("apiId") Integer apiId);
 
-    List<Cases> findCaseAndParameter(@Param("apiId") Integer apiId);
+    List<Cases> findCaseAndParameter(Cases cases);
+
+    List<Cases> selectRelatedCaseByid(@Param("id") Integer id);
 }

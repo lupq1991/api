@@ -1,6 +1,7 @@
 package com.cn.phoenix.api.util;
 
 import com.alibaba.fastjson.JSONObject;
+import com.cn.phoenix.api.enumeration.DictCode;
 import com.cn.phoenix.api.pojo.HttpPojo;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
@@ -13,7 +14,8 @@ import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -23,7 +25,7 @@ import java.util.*;
 public class HttpUtil {
 
 
-    private static Logger logger = Logger.getLogger(HttpUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(HttpUtil.class);
 
     /**
      * 根据请求类型去调用接口方法
@@ -42,11 +44,12 @@ public class HttpUtil {
             params = (Map<String, String>) JSONObject.parse(parameter);
         } catch (Exception e) {
             httpPojo.setResult("传递的参数有问题:" + parameter);
+            logger.error("{}", e);
         }
-        if (requestType == 1) {
+        if (requestType == DictCode.RequestCode.POST.code()) {
             httpPojo = doPost(url, params, contentType, headerMap);
-        } else if (requestType == 2) {
-            httpPojo = doGet(url, params);
+        } else if (requestType == DictCode.RequestCode.GET.code()) {
+            httpPojo = doGet(url, params, headerMap);
         } else {
             httpPojo.setResult("接口提交方式有误，请检查！！！");
         }
@@ -64,25 +67,20 @@ public class HttpUtil {
 
     private static HttpPojo doPost(String url, Map<String, String> params, int contentType, Map<String, String> headerMap) {
         // 从配置文件取出配置，这个决定了我们要以何种方式去提交参数
-        if (contentType == 1) {
+        if (contentType == DictCode.ContentCode.JSON.code()) {
             return doPostByJson(url, params, headerMap);
         }
         // 表单的情况
-        else if (contentType == 2) {
-            return doPostByForm(url, params);
+        else if (contentType == DictCode.ContentCode.FORM.code()) {
+            return doPostByForm(url, params, headerMap);
         }
         return null;
     }
 
     private static HttpPojo doPostByJson(String url, Map<String, String> params, Map<String, String> headerMap) {
-//        logger.info("请求的接口地址：" + url);
-        // 指定请求方式post
         HttpPost httpPost = new HttpPost(url);
-        if (headerMap.size() > 0) {
-            for (String header : headerMap.keySet()) {
-                httpPost.addHeader(header, headerMap.get(header));
-            }
-        }
+
+        addHeader(httpPost, headerMap);
 
         String result = null;
         long responseTime = 0;
@@ -92,7 +90,6 @@ public class HttpUtil {
             httpPost.setEntity(new StringEntity(jsonStr, "UTF-8"));
             // 发起请求,获得响应信息
             HttpClient httpClient = HttpClients.createDefault();
-            addCookieInRequestHeaderBeforeRequest(httpPost);
             long t1 = System.currentTimeMillis();
             HttpResponse httpResponse = httpClient.execute(httpPost);
             responseTime = System.currentTimeMillis() - t1;
@@ -101,9 +98,11 @@ public class HttpUtil {
             code = httpResponse.getStatusLine().getStatusCode();
             // 响应报文
             result = EntityUtils.toString(httpResponse.getEntity());
-            logger.info("POST类型接口（json提交），返回状态码：" + code + "返回报文：" + result + "响应时间：" + responseTime);
+            logger.info("POST类型接口（json提交），返回状态码→{},返回报文→{},响应时间→{}",
+                    code, result, responseTime);
 
         } catch (Exception e) {
+            logger.error("POST类型接口（json提交）调用失败!", e);
 
         }
         HttpPojo httpPojo = new HttpPojo();
@@ -113,9 +112,10 @@ public class HttpUtil {
         return httpPojo;
     }
 
-    private static HttpPojo doPostByForm(String url, Map<String, String> params) {
-        // 指定请求方式post
+    private static HttpPojo doPostByForm(String url, Map<String, String> params, Map<String, String> headerMap) {
         HttpPost httpPost = new HttpPost(url);
+
+        addHeader(httpPost, headerMap);
         List<BasicNameValuePair> parameters = new ArrayList<BasicNameValuePair>();
         Set<String> keys = params.keySet();
         for (String name : keys) {
@@ -129,19 +129,19 @@ public class HttpUtil {
             httpPost.setEntity(new UrlEncodedFormEntity(parameters, "UTF-8"));
             // 发起请求,获得响应信息
             HttpClient httpClient = HttpClients.createDefault();
-            addCookieInRequestHeaderBeforeRequest(httpPost);
             long t1 = System.currentTimeMillis();
             HttpResponse httpResponse = httpClient.execute(httpPost);
             responseTime = System.currentTimeMillis() - t1;
-            getAndStoreCookiesFromResponseHeader(httpResponse);
+
+//            getAndStoreCookiesFromResponseHeader(httpResponse);
             // 接口状态码
             code = httpResponse.getStatusLine().getStatusCode();
             // 响应报文
             result = EntityUtils.toString(httpResponse.getEntity());
-            logger.info("POST类型接口（表单提交），返回状态码：" + code + "返回报文：" + result + "响应时间：" + responseTime);
-
+            logger.info("POST类型接口（表单提交），返回状态码→{},返回报文→{},响应时间→{}",
+                    code, result, responseTime);
         } catch (Exception e) {
-
+            logger.info("{}", e);
         }
         HttpPojo httpPojo = new HttpPojo();
         httpPojo.setHttpCode(code);
@@ -157,34 +157,36 @@ public class HttpUtil {
      * @param params
      * @return
      */
-    private static HttpPojo doGet(String url, Map<String, String> params) {
+    private static HttpPojo doGet(String url, Map<String, String> params, Map<String, String> headerMap) {
         Set<String> keys = params.keySet();
         int mark = 1;
+        StringBuilder urlBuilder = new StringBuilder(url);
         for (String name : keys) {
             if (mark == 1) {
-                url += ("?" + name + "=" + params.get(name));
+                urlBuilder.append("?").append(name).append("=").append(params.get(name));
             } else {
-                url += ("&" + name + "=" + params.get(name));
+                urlBuilder.append("&").append(name).append("=").append(params.get(name));
             }
             mark++;
         }
+        url = urlBuilder.toString();
         HttpGet httpGet = new HttpGet(url);
-        logger.info("get请求的url是：" + url);
+        addHeader(httpGet, headerMap);
         HttpClient httpClient = HttpClients.createDefault();
         String result = null;
         long responseTime = 0;
         int code = 0;
         try {
-            addCookieInRequestHeaderBeforeRequest(httpGet);
             long t1 = System.currentTimeMillis();
             HttpResponse httpResponse = httpClient.execute(httpGet);
             responseTime = System.currentTimeMillis() - t1;
-            getAndStoreCookiesFromResponseHeader(httpResponse);
             code = httpResponse.getStatusLine().getStatusCode();
             result = EntityUtils.toString(httpResponse.getEntity());
         } catch (Exception e) {
-
+            logger.info("{}", e);
         }
+        logger.info("get请求的url→{},返回状态码→{},返回报文→{},响应时间→{}",
+                url, code, result, responseTime);
         HttpPojo httpPojo = new HttpPojo();
         httpPojo.setHttpCode(code);
         httpPojo.setResult(result);
@@ -194,21 +196,39 @@ public class HttpUtil {
 
     private static Map<String, String> cooking = new HashMap<String, String>();
 
+
+    /**
+     * 添加header
+     * @param httpRequest
+     * @param headerMap
+     */
+    private static void addHeader(HttpRequest httpRequest, Map<String, String> headerMap) {
+        if (headerMap.size() > 0) {
+            for (String header : headerMap.keySet()) {
+                String headerValue = headerMap.get(header);
+                httpRequest.addHeader(header, headerValue);
+            }
+        }
+
+
+    }
+
     /**
      * 响应头里添加cookie
      *
-     * @param Request
+     * @param request
      */
-    private static void addCookieInRequestHeaderBeforeRequest(HttpRequest Request) {
+    private static void addCookieInRequestHeaderBeforeRequest(HttpRequest request) {
         String jsessionIdCookie = cooking.get("usid");
         if (jsessionIdCookie != null) {
-            Request.addHeader("Cookie", jsessionIdCookie);
+            request.addHeader("Cookie", jsessionIdCookie);
         }
 
     }
 
     /**
      * 获取cookie并保存
+     * 这个方法应该用不到了
      *
      * @param httpResponse
      */

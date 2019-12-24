@@ -1,12 +1,11 @@
 package com.cn.phoenix.api.controller;
 
 import com.cn.phoenix.api.annotation.UserLoginToken;
-import com.cn.phoenix.api.pojo.Api;
-import com.cn.phoenix.api.pojo.Cases;
-import com.cn.phoenix.api.pojo.ItemsPojo;
-import com.cn.phoenix.api.pojo.PerformTest;
+import com.cn.phoenix.api.interceptor.HandleUser;
+import com.cn.phoenix.api.pojo.*;
 import com.cn.phoenix.api.result.APIResponse;
 import com.cn.phoenix.api.result.ResponseCode;
+import com.cn.phoenix.api.service.ProjectService;
 import com.cn.phoenix.api.service.ApiService;
 import com.cn.phoenix.api.service.CaseService;
 import com.cn.phoenix.api.service.DictionaryService;
@@ -28,6 +27,9 @@ public class ApiController {
     ApiService apiService;
 
     @Autowired
+    ProjectService apiGroupService;
+
+    @Autowired
     CaseService caseService;
 
     @Autowired
@@ -35,15 +37,44 @@ public class ApiController {
 
     @UserLoginToken
     @ApiOperation(value = "获取接口信息", notes = "获取接口信息")
+    @RequestMapping(value = "/group", method = RequestMethod.GET)
+    public APIResponse<ItemsPojo> getApiGroup() {
+
+        ItemsPojo<Project> itemsPojo = new ItemsPojo<>();
+        Project project = new Project();
+        project.setProjectIdList(HandleUser.getProjectIdByUser());
+
+        List<Project> apiGroupList = apiGroupService.selectAllProjectAndApi(project);
+
+        itemsPojo.setItems(apiGroupList);
+
+        APIResponse<ItemsPojo> apiResponse = APIResponse.getSuccResponse();
+        apiResponse.setData(itemsPojo);
+
+        return apiResponse;
+    }
+
+    @UserLoginToken
+    @ApiOperation(value = "获取接口信息(接口管理用到)", notes = "获取接口信息")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
-    public APIResponse<ItemsPojo> getApi(Integer page, Integer limit) {
+    public APIResponse<ItemsPojo> getApi(Integer page, Integer limit, Integer projectId) {
         BaseController<Api> baseController = new BaseController<>();
 
         if (baseController.isPageNull(page, limit) != null) {
             return baseController.isPageNull(page, limit);
         }
+        Api api = new Api();
 
-        List<Api> apiList = apiService.findAll(page, limit);
+        List<Integer> projectIdList = HandleUser.getProjectIdByUser();
+
+        if (projectIdList.size() == 0) {
+            return APIResponse.getSuccResponse();
+        }
+
+        api.setProjectIdList(projectIdList);
+        api.setProjectId(projectId);
+
+        List<Api> apiList = apiService.findAll(page, limit, api);
 
         return baseController.getList(page, limit, apiList);
     }
@@ -53,15 +84,14 @@ public class ApiController {
     @ApiOperation(value = "获取接口所有信息", notes = "获取接口信息")
     @RequestMapping(value = "/all/list", method = RequestMethod.GET)
     public APIResponse<ItemsPojo<Api>> getApiAll(Integer apiId) {
-
         Api api = new Api();
         api.setId(apiId);
         List<Api> apiList1 = new ArrayList<>();
         if (apiId != null) {
             apiList1.add(api);
         }
-
         ItemsPojo<Api> itemsPojo = new ItemsPojo<>();
+        // apiList1 获取的是个空的,暂时不需要改这个方法
         List<Api> apiList = apiService.findAllInfo(apiList1);
         itemsPojo.setItems(apiList);
         APIResponse<ItemsPojo<Api>> apiResponse = APIResponse.getSuccResponse();
@@ -79,7 +109,7 @@ public class ApiController {
         if (apiService.findApiByPath(api).size() > 0) {
             return APIResponse.getErrorResponse(ResponseCode.DATA_REPEAT, api.getPath());
         }
-        apiService.insertSelective(api);
+        apiService.oneInsert(api);
 
         return APIResponse.getSuccResponse();
     }
@@ -91,7 +121,7 @@ public class ApiController {
         if (api.getId() == null) {
             return APIResponse.getErrorResponse(ResponseCode.PARAMETER_LACK, "id");
         }
-        if (apiService.selectByPrimaryKey(api) == null) {
+        if (apiService.selectById(api) == null) {
             return APIResponse.getErrorResponse(ResponseCode.DATA_NULL, api.getId() + "");
         }
 
@@ -104,7 +134,7 @@ public class ApiController {
             }
             return APIResponse.getErrorResponse(ResponseCode.DATA_LINKED, "接口id = " + api.getId() + ",用例 = " + caseName);
         }
-        apiService.deleteByPrimaryKey(api);
+        apiService.deleteById(api);
         return APIResponse.getSuccResponse();
     }
 
@@ -115,7 +145,7 @@ public class ApiController {
         if (api.getId() == null) {
             return APIResponse.getErrorResponse(ResponseCode.PARAMETER_LACK, "id");
         }
-        if (apiService.selectByPrimaryKey(api) == null) {
+        if (apiService.selectById(api) == null) {
             return APIResponse.getErrorResponse(ResponseCode.DATA_NULL, api.getId() + "");
         }
         if (api.getName() == null && api.getPath() == null && api.getStatus() == null && api.getInfo() == null) {
@@ -128,7 +158,7 @@ public class ApiController {
             }
         }
 
-        apiService.updateByPrimaryKeySelective(api);
+        apiService.updateById(api);
 
         return APIResponse.getSuccResponse();
     }

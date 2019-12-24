@@ -4,15 +4,15 @@
     <resultMap id="BaseResultMap" type="com.cn.phoenix.api.pojo.Parameter">
         <id column="id" jdbcType="INTEGER" property="id"/>
         <result column="case_id" jdbcType="INTEGER" property="caseId"/>
-        <result column="p_key" jdbcType="VARCHAR" property="pKey"/>
-        <result column="p_value" jdbcType="VARCHAR" property="pValue"/>
+        <result column="key" jdbcType="VARCHAR" property="key"/>
+        <result column="value" jdbcType="VARCHAR" property="value"/>
         <result column="json_str" jdbcType="VARCHAR" property="jsonStr"/>
         <result column="info" jdbcType="VARCHAR" property="info"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
         <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
     </resultMap>
     <sql id="Base_Column_List">
-    id,case_id, p_key, p_value, json_str, info, create_time, update_time
+    id,case_id, `key`, `value`, json_str, info, create_time, update_time
   </sql>
     <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
         select
@@ -28,9 +28,9 @@
         <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
             SELECT LAST_INSERT_ID()
         </selectKey>
-        insert into parameter (case_id,p_key, p_value, json_str,info
+        insert into parameter (case_id,`key`, `value`, json_str,info
         )
-        values (#{caseId},#{pKey,jdbcType=VARCHAR}, #{pValue,jdbcType=VARCHAR}, #{jsonStr,jdbcType=VARCHAR},
+        values (#{caseId},#{key,jdbcType=VARCHAR}, #{value,jdbcType=VARCHAR}, #{jsonStr,jdbcType=VARCHAR},
         #{info,jdbcType=VARCHAR}
         )
     </insert>
@@ -74,11 +74,11 @@
             <if test="caseId != null">
                 case_id = #{caseId,jdbcType=VARCHAR},
             </if>
-            <if test="pKey != null">
-                p_key = #{pKey,jdbcType=VARCHAR},
+            <if test="key != null">
+                `key` = #{key,jdbcType=VARCHAR},
             </if>
-            <if test="pValue != null">
-                p_value = #{pValue,jdbcType=VARCHAR},
+            <if test="value != null">
+                `value` = #{value,jdbcType=VARCHAR},
             </if>
             <if test="jsonStr != null">
                 json_str = #{jsonStr,jdbcType=VARCHAR},
@@ -91,8 +91,8 @@
     </update>
     <update id="updateByPrimaryKey" parameterType="com.cn.phoenix.api.pojo.Parameter">
     update parameter
-    set p_key = #{pKey,jdbcType=VARCHAR},
-      p_value = #{pValue,jdbcType=VARCHAR},
+    set `key` = #{key,jdbcType=VARCHAR},
+      `value` = #{value,jdbcType=VARCHAR},
       json_str = #{jsonStr,jdbcType=VARCHAR},
       info = #{info,jdbcType=VARCHAR}
     where id = #{id,jdbcType=INTEGER}
@@ -106,9 +106,9 @@
         <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
             SELECT LAST_INSERT_ID()
         </selectKey>
-        insert into parameter (p_key,p_value,json_str,info,case_id) values
+        insert into parameter (`key`,`value`,json_str,info,case_id) values
         <foreach collection="list" item="parameterInfo" index="index" separator=",">
-            (#{parameterInfo.pKey},#{parameterInfo.pValue},#{parameterInfo.jsonStr},#{parameterInfo.info},#{parameterInfo.caseId})
+            (#{parameterInfo.key},#{parameterInfo.value},#{parameterInfo.jsonStr},#{parameterInfo.info},#{parameterInfo.caseId})
         </foreach>
     </insert>
     <update id="batchUpdate" parameterType="com.cn.phoenix.api.pojo.Parameter">
@@ -117,30 +117,30 @@
         </selectKey>
         update parameter
         <trim prefix="set" suffixOverrides=",">
-            <trim prefix="p_key =case" suffix="end,">
+            <trim prefix="`key` = case" suffix="end,">
                 <foreach collection="list" item="i" index="index">
-                    <if test="i.pKey!=null">
-                        when id=#{i.id} then #{i.pKey}
+                    <if test="i.key != null">
+                        when id=#{i.id} then #{i.key}
                     </if>
                 </foreach>
             </trim>
-            <trim prefix="p_value =case" suffix="end,">
+            <trim prefix="`value` = case" suffix="end,">
                 <foreach collection="list" item="i" index="index">
-                    <if test="i.pValue!=null">
-                        when id=#{i.id} then #{i.pValue}
+                    <if test="i.value != null">
+                        when id=#{i.id} then #{i.value}
                     </if>
                 </foreach>
             </trim>
             <trim prefix="json_str =case" suffix="end,">
                 <foreach collection="list" item="i" index="index">
-                    <if test="i.jsonStr!=null">
+                    <if test="i.jsonStr != null">
                         when id=#{i.id} then #{i.jsonStr}
                     </if>
                 </foreach>
             </trim>
-            <trim prefix="info =case" suffix="end,">
+            <trim prefix="info = case" suffix="end,">
                 <foreach collection="list" item="i" index="index">
-                    <if test="i.info!=null">
+                    <if test="i.info != null">
                         when id=#{i.id} then #{i.info}
                     </if>
                 </foreach>

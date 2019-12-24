@@ -1,6 +1,7 @@
 package com.cn.phoenix.api.pojo;
 
-import com.cn.phoenix.api.result.DictCode;
+import com.cn.phoenix.api.enumeration.DictCode;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -11,11 +12,21 @@ import java.util.List;
 public class Api {
     private Integer id;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private List<Integer> apiIdList;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private List<Integer> caseIdList;
     private String name;
 
     private String path;
 
     private Integer status;
+
+    private Integer projectId;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private List<Integer> projectIdList;
 
     private List<Cases> cases = new ArrayList<>();
 
@@ -27,60 +38,21 @@ public class Api {
 
     private Date updateTime;
 
-    public Integer getId() {
-        return id;
+    private String aesDecryption;
+
+    private String aesEncryption;
+
+    private boolean aesEnc;
+
+    private boolean aesDec;
+
+
+    public boolean isAesDec() {
+        return getAesDecryption() != null;
     }
 
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name == null ? null : name.trim();
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path == null ? null : path.trim();
-    }
-
-    public Integer getStatus() {
-        return status;
-    }
-
-    public void setStatus(Integer status) {
-        this.status = status;
-    }
-
-    public String getInfo() {
-        return info;
-    }
-
-    public void setInfo(String info) {
-        this.info = info == null ? null : info.trim();
-    }
-
-    public Date getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
-    }
-
-    public Date getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
+    public boolean isAesEnc() {
+        return getAesEncryption() != null;
     }
 
     public String getStatusName() {
@@ -90,17 +62,5 @@ public class Api {
             statusName = DictCode.SwitchCode.getText(status);
         }
         return statusName;
-    }
-
-    public void setStatusName(String statusName) {
-        this.statusName = statusName;
-    }
-
-    public List<Cases> getCases() {
-        return cases;
-    }
-
-    public void setCases(List<Cases> cases) {
-        this.cases = cases;
     }
 }

@@ -12,7 +12,6 @@ import java.util.List;
 class BaseService<T> {
 
     Page<T> startPage(Integer page, Integer limit) {
-
         return PageHelper.startPage(page, limit);
     }
 
@@ -24,7 +23,6 @@ class BaseService<T> {
 
         try {
             pageNum.get(0);
-
         } catch (IndexOutOfBoundsException e) {
             return null;
         }

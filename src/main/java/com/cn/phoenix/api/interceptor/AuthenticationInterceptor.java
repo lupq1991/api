@@ -32,6 +32,8 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest httpServletRequest,
                              HttpServletResponse httpServletResponse, Object object) {
 
+        HandleUser.user = null;
+
         //从header头获取token
         String token = httpServletRequest.getHeader("API-Token");
         // 如果不是映射到方法直接通过
@@ -47,6 +49,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             Method method = handlerMethod.getMethod();
 
             //检查有没有需要用户权限的注解 @UserLoginToken
+
             //UserLoginToken注解是否在方法上
             if (method.isAnnotationPresent(UserLoginToken.class)) {
                 //获得UserLoginToken注解
@@ -86,6 +89,7 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
                         returnJson(httpServletResponse, jsonObject);
                         return false;
                     }
+                    HandleUser.user = user;
                     return true;
                 }
             }

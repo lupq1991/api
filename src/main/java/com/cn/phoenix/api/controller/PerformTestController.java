@@ -1,13 +1,12 @@
 package com.cn.phoenix.api.controller;
 
-import com.alibaba.fastjson.JSONObject;
 import com.cn.phoenix.api.annotation.UserLoginToken;
+import com.cn.phoenix.api.interceptor.HandleUser;
 import com.cn.phoenix.api.pojo.*;
 import com.cn.phoenix.api.result.APIResponse;
 import com.cn.phoenix.api.result.ResponseCode;
 import com.cn.phoenix.api.service.*;
 import com.cn.phoenix.api.util.HttpUtil;
-import com.github.pagehelper.Page;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,47 +16,54 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
 
-import static java.util.concurrent.Executors.*;
 
 @RestController
 @RequestMapping(value = "/run")
 public class PerformTestController {
 
-    @Autowired
-    HostService hostService;
+    final
+    private HostService hostService;
+
+    final
+    private ApiService apiService;
+
+    final
+    private CaseService caseService;
+
+    final
+    private ParameterService parameterService;
+
+    final
+    private TestResultService testResultService;
+
+    final
+    private RunHttpService runHttpService;
+
+    final
+    private HeaderService headerService;
+
+    final
+    private CheckService checkService;
 
     @Autowired
-    ApiService apiService;
-
-    @Autowired
-    CaseService caseService;
-
-    @Autowired
-    CaseParameterService caseParameterService;
-
-    @Autowired
-    ParameterService parameterService;
-
-    @Autowired
-    TestResultService testResultService;
-
-    @Autowired
-    RunHttpService runHttpService;
-
-    @Autowired
-    HeaderService headerService;
-
-    @Autowired
-    CheckService checkService;
+    public PerformTestController(HostService hostService, ApiService apiService, CaseService caseService, ParameterService parameterService, TestResultService testResultService, RunHttpService runHttpService, HeaderService headerService, CheckService checkService) {
+        this.hostService = hostService;
+        this.apiService = apiService;
+        this.caseService = caseService;
+        this.parameterService = parameterService;
+        this.testResultService = testResultService;
+        this.runHttpService = runHttpService;
+        this.headerService = headerService;
+        this.checkService = checkService;
+    }
 
     @UserLoginToken
     @ApiOperation(value = "获取测试结果", notes = "获取测试结果")
-    @RequestMapping(value = "/test/report", method = RequestMethod.GET)
+    @RequestMapping(value = "/report", method = RequestMethod.GET)
     public APIResponse<ItemsPojo> getReports(Integer page, Integer limit, Integer apiId,
-                                             Integer caseId, String startTime, String endTime) {
+                                             Integer caseId, Integer pass, String startTime,
+                                             String endTime, String batchId) {
 
         BaseController<TestResult> baseController = new BaseController<>();
 
@@ -65,9 +71,15 @@ public class PerformTestController {
             return baseController.isPageNull(page, limit);
         }
 
+        List<Integer> projectIdList = HandleUser.getProjectIdByUser();
+
         TestResult testResult = new TestResult();
+        testResult.setProjectIdList(projectIdList);
+        testResult.setBatchId(batchId);
         testResult.setApiId(apiId);
         testResult.setCaseId(caseId);
+        testResult.setPass(pass);
+
         if (startTime != null && endTime != null) {
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             try {
@@ -91,7 +103,7 @@ public class PerformTestController {
     public APIResponse<TestResult> runAllTest(@RequestBody PerformTest performTest) {
         List<Api> apis = performTest.getApiList();
         Integer runHostId = performTest.getRunHostId();
-        runHttpService.runAllTest(apis, runHostId);
+        runHttpService.batchRunCase(apis, runHostId);
         return APIResponse.getSuccResponse();
 
     }
@@ -113,7 +125,7 @@ public class PerformTestController {
         //实例化
         Cases cases = caseService.selectById(caseId);
         Api api = apiService.selectById(apiId);
-        Host host = hostService.selectById(runHostId);
+        Host host = hostService.selectHostAndConfigByHostId(runHostId);
 
         //查看用例是否自定义header
         List<Header> headerListCase = headerService.selectByCaseId(caseId);
@@ -141,14 +153,14 @@ public class PerformTestController {
         Map<String, String> headerMap = new HashMap<>();
         if (headerListCase.size() > 0) {
             for (Header header : headerListCase) {
-                headerMap.put(header.gethKey(), header.gethValue());
+                headerMap.put(header.getKey(), header.getValue());
             }
 
         } else {
             // 处理header头
             List<Header> headerList = headerService.selectByCaseId(0);
             for (Header header : headerList) {
-                headerMap.put(header.gethKey(), header.gethValue());
+                headerMap.put(header.getKey(), header.getValue());
             }
         }
         //调用请求接口方法,获取调用结果
@@ -162,6 +174,7 @@ public class PerformTestController {
         testResult.setApiId(apiId);
         testResult.setResult(httpPojo.getResult());
         testResult.setResponseTime(httpPojo.getResponseTime() + "");
+
         if (runHttpService.isPass(check, httpPojo.getHttpCode(), httpPojo.getResult())) {
             testResult.setPass(1);
         } else {

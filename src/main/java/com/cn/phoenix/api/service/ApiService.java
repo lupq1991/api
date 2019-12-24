@@ -15,42 +15,39 @@ public class ApiService {
     @Autowired
     ApiMapper apiMapper;
 
-    public List<Api> findAll(Integer page, Integer limit) {
+    public List<Api> findAll(Integer page, Integer limit, Api api) {
         BaseService<Api> baseService = new BaseService<>();
-
         Page<Api> pageNum = baseService.startPage(page, limit);
-
-        apiMapper.findAll();
-
+        apiMapper.findAll(api);
         return baseService.page(pageNum);
     }
 
-    public int insertSelective(Api api) {
-        return apiMapper.insertSelective(api);
+    public int oneInsert(Api api) {
+        return apiMapper.oneInsert(api);
     }
 
     public List<Api> findApiByPath(Api api) {
         return apiMapper.findApiByPath(api.getPath());
     }
 
-    public int deleteByPrimaryKey(Api api) {
-        return apiMapper.deleteByPrimaryKey(api.getId());
+    public int deleteById(Api api) {
+        return apiMapper.deleteById(api.getId());
     }
 
-    public Api selectByPrimaryKey(Api api) {
-        return apiMapper.selectByPrimaryKey(api.getId());
+    public Api selectById(Api api) {
+        return apiMapper.selectById(api.getId());
     }
 
     public Api selectById(int id) {
-        return apiMapper.selectByPrimaryKey(id);
+        return apiMapper.selectById(id);
     }
 
     public List<Api> checkUnique(Api api) {
         return apiMapper.checkUnique(api);
     }
 
-    public int updateByPrimaryKeySelective(Api api) {
-        return apiMapper.updateByPrimaryKeySelective(api);
+    public int updateById(Api api) {
+        return apiMapper.updateById(api);
     }
 
     public List<Api> findAllInfo(List<Api> api) {

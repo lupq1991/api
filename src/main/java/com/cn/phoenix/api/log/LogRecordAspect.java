@@ -24,7 +24,7 @@ import java.util.Enumeration;
 @Component
 public class LogRecordAspect {
     private static final Logger logger = LoggerFactory.getLogger(LogRecordAspect.class);
-    public final String packagePath = "execution(*  *..*.*.controller..*.*(..))";
+    private final String packagePath = "execution(*  *..*.*.controller..*.*(..))";
     private static final String UTF_8 = "utf-8";
 
     /**

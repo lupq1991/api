@@ -16,11 +16,14 @@ public class HostService {
     private HostMapper hostMapper;
 
 
-    public List<Host> findRunHost(Integer page, Integer limit) {
-        BaseService<Host> baseService = new BaseService<>();
-        Page<Host> pageNum = baseService.startPage(page, limit);
-        hostMapper.findRunHost();
-        return baseService.page(pageNum);
+    public List<Host> findRunHost(Integer page, Integer limit,Host host) {
+        if (page != null && limit != null) {
+            BaseService<Host> baseService = new BaseService<>();
+            Page<Host> pageNum = baseService.startPage(page, limit);
+            hostMapper.findRunHost(host);
+            return baseService.page(pageNum);
+        }
+        return hostMapper.findRunHost(host);
     }
 
     public int insert(Host host) {
@@ -31,12 +34,12 @@ public class HostService {
         return hostMapper.findHostByRunHost(host.getRunHost());
     }
 
-    public Host selectByPrimaryKey(Host host) {
-        return hostMapper.selectByPrimaryKey(host.getId());
+    public Host selectById(Host host) {
+        return hostMapper.selectById(host.getId());
     }
 
-    public Host selectById(int hostId) {
-        return hostMapper.selectByPrimaryKey(hostId);
+    public Host selectHostAndConfigByHostId(int hostId) {
+        return hostMapper.selectHostAndConfigByHostId(hostId);
     }
 
     public int deleteByPrimaryKey(Host host) {

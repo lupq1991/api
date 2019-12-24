@@ -2,6 +2,7 @@ package com.cn.phoenix.api.dao;
 
 import com.cn.phoenix.api.pojo.Variable;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -20,14 +21,14 @@ public interface VariableMapper {
 
     int oneDelete(Variable variable);
 
-    List<Variable> selectByKey(String key);
-
     Variable selectOnlyKey(Variable variable);
+
+    Variable selectOnlyKeyByHostId(Variable variable);
 
     List<Variable> select();
 
-    List<Variable> selectNoCaseId();
+    List<Variable> selectNoCaseId(@Param("hostId") Integer hostId);
 
-    List<Variable> selectHaveCaseId();
+    List<Variable> selectHaveCaseId(@Param("hostId") Integer hostId);
 
 }

@@ -15,43 +15,27 @@ public class CaseService {
     @Autowired
     CasesMapper casesMapper;
 
-    public List<Cases> findAll() {
-        return casesMapper.findAll();
-    }
-
-    public int insertSelective(Cases cases) {
-        return casesMapper.insertSelective(cases);
-    }
-
     public Cases selectByCaseId(Cases cases) {
-        return casesMapper.selectByPrimaryKey(cases.getCaseId());
+        return casesMapper.selectById(cases.getCaseId());
     }
 
     public Cases selectById(int id) {
-        return casesMapper.selectByPrimaryKey(id);
+        return casesMapper.selectById(id);
     }
 
-    public Cases selectByPrimaryKey(Cases cases) {
-        return casesMapper.selectByPrimaryKey(cases.getId());
-    }
-
-    public int deleteByPrimaryKey(Cases cases) {
-        return casesMapper.deleteByPrimaryKey(cases.getId());
+    public Cases selectById(Cases cases) {
+        return casesMapper.selectById(cases.getId());
     }
 
     public List<Cases> findCasesByApiId(Integer apiId) {
         return casesMapper.findCasesByApiId(apiId);
     }
 
-    public int updateByPrimaryKeySelective(Cases cases) {
-        return casesMapper.updateByPrimaryKeySelective(cases);
-    }
-
-    public List<Cases> findCaseAndParameter(Integer page, Integer limit, Integer apiId) {
+    public List<Cases> findCaseAndParameter(Integer page, Integer limit, Cases cases) {
 
         // 分页插件: 查询第1页，每页10行
         Page<Cases> pageNum = PageHelper.startPage(page, limit);
-        List<Cases> casesList = casesMapper.findCaseAndParameter(apiId);
+        List<Cases> casesList = casesMapper.findCaseAndParameter(cases);
         if (casesList.size() > 0) {
             // 数据表的总行数
             pageNum.getTotal();
@@ -61,5 +45,21 @@ public class CaseService {
             return pageNum;
         }
         return null;
+    }
+
+    public int insertSelective(Cases cases) {
+        return casesMapper.insertSelective(cases);
+    }
+
+    public int deleteById(Cases cases) {
+        return casesMapper.deleteById(cases.getId());
+    }
+
+    public int updateById(Cases cases) {
+        return casesMapper.updateById(cases);
+    }
+
+    public List<Cases> selectRelatedCaseByid(Integer id) {
+        return casesMapper.selectRelatedCaseByid(id);
     }
 }

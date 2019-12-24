@@ -42,12 +42,11 @@ public class VariableService {
         return variableMapper.oneDelete(variable);
     }
 
-    public List<Variable> selectByKey(String key) {
-        return variableMapper.selectByKey(key);
-    }
-
     public Variable selectOnlyKey(Variable variable) {
         return variableMapper.selectOnlyKey(variable);
+    }
+    public Variable selectOnlyKeyByHostId(Variable variable) {
+        return variableMapper.selectOnlyKeyByHostId(variable);
     }
 
     public List<Variable> select(Integer page, Integer limit) {
@@ -63,11 +62,11 @@ public class VariableService {
         return variableMapper.select();
     }
 
-    public List<Variable> selectNoCaseId() {
-        return variableMapper.selectNoCaseId();
+    public List<Variable> selectNoCaseId(Integer hostId) {
+        return variableMapper.selectNoCaseId(hostId);
     }
 
-    public List<Variable> selectHaveCaseId() {
-        return variableMapper.selectHaveCaseId();
+    public List<Variable> selectHaveCaseId(Integer hostId) {
+        return variableMapper.selectHaveCaseId(hostId);
     }
 }

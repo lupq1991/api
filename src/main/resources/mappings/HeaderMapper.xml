@@ -3,16 +3,17 @@
 <mapper namespace="com.cn.phoenix.api.dao.HeaderMapper">
     <resultMap id="BaseResultMap" type="com.cn.phoenix.api.pojo.Header">
         <id column="id" jdbcType="INTEGER" property="id"/>
-        <result column="h_key" jdbcType="VARCHAR" property="hKey"/>
-        <result column="h_value" jdbcType="VARCHAR" property="hValue"/>
+        <result column="key" jdbcType="VARCHAR" property="key"/>
+        <result column="value" jdbcType="VARCHAR" property="value"/>
         <result column="case_id" jdbcType="INTEGER" property="caseId"/>
         <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="is_use_result" jdbcType="INTEGER" property="isUseResult"/>
         <result column="info" jdbcType="VARCHAR" property="info"/>
         <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
         <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
     </resultMap>
     <sql id="Base_Column_List">
-    id,case_id, h_key, h_value, status, info, create_time, update_time
+    id,case_id, `key`, `value`, status, info, create_time, update_time,is_use_result
   </sql>
     <select id="selectByCaseId" resultMap="BaseResultMap">
         select
@@ -26,9 +27,9 @@
         <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
             SELECT LAST_INSERT_ID()
         </selectKey>
-        insert into header (h_key,h_value,status,info,case_id) values
+        insert into header (`key`,`value`,status,info,case_id) values
         <foreach collection="list" item="item" index="index" separator=",">
-            (#{item.hKey},#{item.hValue}
+            (#{item.key},#{item.value}
             ,#{item.status}
             ,#{item.info}
             ,#{item.caseId})
@@ -41,17 +42,17 @@
         </selectKey>
         update header
         <trim prefix="set" suffixOverrides=",">
-            <trim prefix="h_key =case" suffix="end,">
+            <trim prefix="key =case" suffix="end,">
                 <foreach collection="list" item="i" index="index">
-                    <if test="i.hKey!=null">
-                        when id=#{i.id} then #{i.hKey}
+                    <if test="i.key!=null">
+                        when id=#{i.id} then #{i.key}
                     </if>
                 </foreach>
             </trim>
-            <trim prefix="h_value =case" suffix="end,">
+            <trim prefix="value =case" suffix="end,">
                 <foreach collection="list" item="i" index="index">
-                    <if test="i.hValue!=null">
-                        when id=#{i.id} then #{i.hValue}
+                    <if test="i.value!=null">
+                        when id=#{i.id} then #{i.value}
                     </if>
                 </foreach>
             </trim>

@@ -1,6 +1,7 @@
 package com.cn.phoenix.api.controller;
 
 import com.cn.phoenix.api.annotation.UserLoginToken;
+import com.cn.phoenix.api.interceptor.HandleUser;
 import com.cn.phoenix.api.pojo.*;
 import com.cn.phoenix.api.result.APIResponse;
 import com.cn.phoenix.api.result.ResponseCode;
@@ -37,15 +38,30 @@ public class CaseController {
     @ApiOperation(value = "获取用例和参数,可通过apiId获取", notes = "获取用例")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public APIResponse<ItemsPojo> getCase(Integer page, Integer limit, Integer apiId) {
-
         BaseController<Cases> baseController = new BaseController<>();
-
         if (baseController.isPageNull(page, limit) != null) {
             return baseController.isPageNull(page, limit);
         }
-        List<Cases> casesList = caseService.findCaseAndParameter(page, limit, apiId);
+        List<Integer> projectIdList = HandleUser.getProjectIdByUser();
+        Cases cases = new Cases();
+        cases.setProjectIdList(projectIdList);
+        cases.setApiId(apiId);
 
+        List<Cases> casesList = caseService.findCaseAndParameter(page, limit, cases);
         return baseController.getList(page, limit, casesList);
+    }
+
+    @UserLoginToken
+    @ApiOperation(value = "获取关联用例", notes = "获取关联用例")
+    @RequestMapping(value = "/related/list", method = RequestMethod.GET)
+    public APIResponse<ItemsPojo> getRelatedCase(Integer id) {
+
+        List<Cases> casesList = caseService.selectRelatedCaseByid(id);
+        ItemsPojo<Cases> itemsPojo = new ItemsPojo<>();
+        itemsPojo.setItems(casesList);
+        APIResponse<ItemsPojo> apiResponse = APIResponse.getSuccResponse();
+        apiResponse.setData(itemsPojo);
+        return apiResponse;
     }
 
     @UserLoginToken
@@ -87,7 +103,7 @@ public class CaseController {
         if (null == cases.getId()) {
             return APIResponse.getErrorResponse(ResponseCode.PARAMETER_LACK, "id");
         }
-        if (null == caseService.selectByPrimaryKey(cases)) {
+        if (null == caseService.selectById(cases)) {
             return APIResponse.getErrorResponse(ResponseCode.DATA_NULL, cases.getId() + "");
         }
 
@@ -95,7 +111,7 @@ public class CaseController {
         if (parameterList.size() > 0) {
             parameterService.batchDelete(parameterList);
         }
-        caseService.deleteByPrimaryKey(cases);
+        caseService.deleteById(cases);
         return APIResponse.getSuccResponse();
     }
 
@@ -106,7 +122,7 @@ public class CaseController {
         if (null == cases.getId()) {
             return APIResponse.getErrorResponse(ResponseCode.PARAMETER_LACK, "id");
         }
-        if (null == caseService.selectByPrimaryKey(cases)) {
+        if (null == caseService.selectById(cases)) {
             return APIResponse.getErrorResponse(ResponseCode.DATA_NULL, cases.getId() + "");
         }
         if (null == cases.getName() && null == cases.getApiId() && null == cases.getRequest()
@@ -119,7 +135,7 @@ public class CaseController {
             }
         }
 
-        caseService.updateByPrimaryKeySelective(cases);
+        caseService.updateById(cases);
         List<Parameter> parameterList = cases.getParameter();
 
         if (parameterList.size() > 0) {
@@ -188,9 +204,5 @@ public class CaseController {
             checkService.insert(check);
         }
         return null;
-    }
-
-    private void statusCodeNull(Check check) {
-        check.setStatusCode(null);
     }
 }

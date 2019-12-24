@@ -44,33 +44,27 @@ public class VariableController {
 
 
     @UserLoginToken
-    @ApiOperation(value = "新增变量", notes = "新增变量")
-    @RequestMapping(value = "/add", method = RequestMethod.POST)
-    public APIResponse<Variable> add(@RequestBody Variable variable) {
-        if (StringUtils.isBlank(variable.getvKey()) || StringUtils.isBlank(variable.getvValue())) {
-            return APIResponse.getErrorResponse(ResponseCode.PARAMETER_LACK, "变量名或者变量值");
-        }
-        if (variableService.selectByKey(variable.getvKey()).size() > 0) {
-            return APIResponse.getErrorResponse(ResponseCode.DATA_REPEAT, "变量名");
-        }
-        variableService.oneInsert(variable);
-        return APIResponse.getSuccResponse();
-    }
+    @ApiOperation(value = "新增或编辑变量", notes = "新增或编辑变量")
+    @RequestMapping(value = "/change", method = RequestMethod.POST)
+    public APIResponse<Variable> change(@RequestBody Variable variable) {
 
-    @UserLoginToken
-    @ApiOperation(value = "更新变量", notes = "更新变量")
-    @RequestMapping(value = "/update", method = RequestMethod.POST)
-    public APIResponse<Variable> update(@RequestBody Variable variable) {
-        if (StringUtils.isBlank(variable.getId() + "")) {
-            return APIResponse.getErrorResponse(ResponseCode.PARAMETER_LACK, "缺少主键Id");
-        }
-        if (StringUtils.isBlank(variable.getvKey()) || StringUtils.isBlank(variable.getvValue())) {
+        if (StringUtils.isBlank(variable.getKey())) {
             return APIResponse.getErrorResponse(ResponseCode.PARAMETER_LACK, "变量名或者变量值");
         }
-        if (variableService.selectOnlyKey(variable) != null) {
+        Variable onlyVariable;
+        if (variable.getHostId() == null) {
+            onlyVariable = variableService.selectOnlyKey(variable);
+        } else {
+            onlyVariable = variableService.selectOnlyKeyByHostId(variable);
+        }
+        if (onlyVariable != null) {
             return APIResponse.getErrorResponse(ResponseCode.DATA_REPEAT, "变量名");
         }
-        variableService.oneUpdate(variable);
+        if (variable.getId() == null) {
+            variableService.oneInsert(variable);
+        } else {
+            variableService.oneUpdate(variable);
+        }
         return APIResponse.getSuccResponse();
     }
 
@@ -79,7 +73,7 @@ public class VariableController {
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
     public APIResponse<Variable> delete(@RequestBody Variable variable) {
         if (StringUtils.isBlank(variable.getId() + "")) {
-            return APIResponse.getErrorResponse(ResponseCode.PARAMETER_LACK, "缺少主键Id");
+            return APIResponse.getErrorResponse(ResponseCode.PARAMETER_LACK, "数据不存在");
         }
         variableService.oneDelete(variable);
         return APIResponse.getSuccResponse();

@@ -1,6 +1,7 @@
 package com.cn.phoenix.api.controller;
 
 import com.cn.phoenix.api.annotation.UserLoginToken;
+import com.cn.phoenix.api.interceptor.HandleUser;
 import com.cn.phoenix.api.pojo.Dictionary;
 import com.cn.phoenix.api.pojo.Host;
 import com.cn.phoenix.api.pojo.ItemsPojo;
@@ -36,12 +37,12 @@ public class HostController {
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public APIResponse<ItemsPojo> getHost(Integer page, Integer limit) {
 
-        BaseController<Host> baseController = new BaseController<>();
+        List<Integer> projectIdList = HandleUser.getProjectIdByUser();
+        Host host = new Host();
+        host.setProjectIdList(projectIdList);
 
-        if (baseController.isPageNull(page, limit) != null) {
-            return baseController.isPageNull(page, limit);
-        }
-        List<Host> hostList = hostService.findRunHost(page, limit);
+        BaseController<Host> baseController = new BaseController<>();
+        List<Host> hostList = hostService.findRunHost(page, limit, host);
 
         return baseController.getList(page, limit, hostList);
     }
@@ -70,7 +71,7 @@ public class HostController {
             return APIResponse.getErrorResponse(ResponseCode.PARAMETER_LACK, "id");
         }
 
-        if (hostService.selectByPrimaryKey(host) == null) {
+        if (hostService.selectById(host) == null) {
             return APIResponse.getErrorResponse(ResponseCode.DATA_NULL, host.getId() + "");
         }
 
@@ -86,11 +87,13 @@ public class HostController {
         if (host.getId() == null) {
             return APIResponse.getErrorResponse(ResponseCode.PARAMETER_LACK, "id");
         }
-        if (hostService.selectByPrimaryKey(host) == null) {
+        if (hostService.selectById(host) == null) {
             return APIResponse.getErrorResponse(ResponseCode.DATA_NULL, host.getId() + "");
         }
-        if (host.getRunName() == null && host.getRunHost() == null && host.getGroupId() == null && host.getStatus() == null) {
-            return APIResponse.getErrorResponse(ResponseCode.PARAMETER_MUST_ONE, "runName,runHost,groupId,status");
+        if (host.getRunName() == null && host.getRunHost() == null
+                && host.getProjectId() == null && host.getStatus() == null) {
+            return APIResponse.getErrorResponse(ResponseCode.PARAMETER_MUST_ONE,
+                    "名称,环境,项目,状态");
         }
 
         if (!StringUtils.isBlank(host.getRunHost())) {

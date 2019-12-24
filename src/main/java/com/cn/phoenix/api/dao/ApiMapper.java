@@ -2,24 +2,21 @@ package com.cn.phoenix.api.dao;
 
 import com.cn.phoenix.api.pojo.Api;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
 @Mapper
 public interface ApiMapper {
-    int deleteByPrimaryKey(Integer id);
+    int deleteById(Integer id);
 
-    int insert(Api record);
+    int oneInsert(Api record);
 
-    int insertSelective(Api record);
+    Api selectById(Integer id);
 
-    Api selectByPrimaryKey(Integer id);
+    int updateById(Api api);
 
-    int updateByPrimaryKeySelective(Api record);
-
-    int updateByPrimaryKey(Api record);
-
-    List<Api> findAll();
+    List<Api> findAll(Api api);
 
     List<Api> findApiByPath(String path);
 
