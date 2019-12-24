@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cn.phoenix.api.dao.UserGroupMapper">
+    <resultMap id="BaseResultMap" type="com.cn.phoenix.api.pojo.UserGroup">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="user_id" jdbcType="INTEGER" property="userId"/>
+        <result column="user_name" jdbcType="VARCHAR" property="userName"/>
+        <result column="group_id" jdbcType="INTEGER" property="groupId"/>
+        <result column="group_name" jdbcType="VARCHAR" property="groupName"/>
+        <result column="project_id" jdbcType="INTEGER" property="projectId"/>
+        <result column="project_name" jdbcType="VARCHAR" property="projectName"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+    <select id="selectUserAndProjectByUserId" resultMap="BaseResultMap">
+        select
+        u.id user_id, u.username user_name,
+        p.id project_id, p.name project_name,
+        g.id group_id, g.name group_name
+        from user_group ug
+        left join `user` u on ug.user_id = u.id
+        left join `group` g on ug.group_id = g.id
+        left join project p on p.group_id = g.id
+        where u.id = #{userId}
+    </select>
+    <insert id="batchInsert" parameterType="com.cn.phoenix.api.pojo.UserGroup">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into user_group (user_id, group_id) values
+        <foreach collection="list" item="item" index="index" separator=",">
+            (#{item.userId}, #{item.groupId})
+        </foreach>
+    </insert>
+    <select id="selectIdByuserAndGroup" resultMap="BaseResultMap">
+        select id from user_group
+        where user_id = #{userId}
+        and group_id = #{groupId}
+    </select>
+    <delete id="oneDelete" parameterType="com.cn.phoenix.api.pojo.UserGroup">
+        delete from user_group where id = #{id}
+    </delete>
+</mapper>

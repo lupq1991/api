@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cn.phoenix.api.dao.ProjectMapper">
+    <resultMap id="BaseResultMap" type="com.cn.phoenix.api.pojo.Project">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="version" jdbcType="VARCHAR" property="version"/>
+        <result column="type" jdbcType="INTEGER" property="type"/>
+        <result column="group_id" jdbcType="INTEGER" property="groupId"/>
+        <result column="group_name" jdbcType="VARCHAR" property="groupName"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="info" jdbcType="VARCHAR" property="info"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        <collection column="api_list" ofType="com.cn.phoenix.api.pojo.Api" property="apiList">
+            <id column="api_id" jdbcType="INTEGER" property="id"/>
+            <result column="api_name" jdbcType="VARCHAR" property="name"/>
+            <result column="path" jdbcType="VARCHAR" property="path"/>
+            <result column="aes_encryption" jdbcType="VARCHAR" property="aesEncryption"/>
+            <result column="aes_decryption" jdbcType="VARCHAR" property="aesDecryption"/>
+            <result column="status" jdbcType="INTEGER" property="status"/>
+            <result column="project_id" jdbcType="INTEGER" property="projectId"/>
+            <result column="api_info" jdbcType="VARCHAR" property="info"/>
+            <result column="api_create_time" jdbcType="TIMESTAMP" property="createTime"/>
+            <result column="api_update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+        </collection>
+    </resultMap>
+    <resultMap id="selectAllProjectMap" type="com.cn.phoenix.api.pojo.Project">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="name" jdbcType="VARCHAR" property="name"/>
+        <result column="version" jdbcType="VARCHAR" property="version"/>
+        <result column="type" jdbcType="INTEGER" property="type"/>
+        <result column="group_id" jdbcType="INTEGER" property="groupId"/>
+        <result column="group_name" jdbcType="VARCHAR" property="groupName"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="info" jdbcType="VARCHAR" property="info"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+        id,`name`,version,`type`,status,info,create_time,update_time
+    </sql>
+    <select id="selectAllProjectAndApi" resultMap="BaseResultMap">
+        select ap.id,ap.name,ap.info,ap.create_time,ap.update_time,
+        a.id api_id,a.project_id,a.name api_name,a.path,a.status,a.aes_enc aes_encryption,a.aes_dec aes_decryption,
+        a.info api_info,a.create_time
+        from project ap left join api a on ap.id = a.project_id
+        where ap.id in
+        <foreach collection="projectIdList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+    <select id="selectAllProject" resultMap="selectAllProjectMap" parameterType="com.cn.phoenix.api.pojo.Project">
+        select
+        p.id, p.name, p.group_id, p.version, p.type, p.status, p.info, p.create_time, p.update_time,
+        g.name group_name
+        from project p left join `group` g on p.group_id = g.id
+        where p.id in
+        <foreach collection="projectIdList" item="item" open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </select>
+    <insert id="oneInsert" parameterType="com.cn.phoenix.api.pojo.Project">
+        insert into
+        project (`name`, group_id, version, `type`, status, info)
+        values
+        (#{name}, #{groupId}, #{version}, #{type}, #{status}, #{info})
+    </insert>
+    <update id="oneUpdate" parameterType="com.cn.phoenix.api.pojo.Project">
+        update project set
+        `name` = #{name}, version = #{version}, group_id = #{groupId},
+        `type` = #{type}, status = #{status},info = #{info}
+        where id = #{id}
+    </update>
+    <delete id="oneDelete" parameterType="com.cn.phoenix.api.pojo.Project">
+        delete from project where id = #{id}
+    </delete>
+    <select id="checkUnique" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from project
+        where `name` = #{name}
+        and group_id = #{groupId}
+        <if test="id != null">
+            and id != #{id}
+        </if>
+    </select>
+    <select id="selectById" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from project
+        where id = #{id}
+    </select>
+</mapper>

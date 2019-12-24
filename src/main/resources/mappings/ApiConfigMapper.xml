@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cn.phoenix.api.dao.ApiConfigMapper">
+    <resultMap id="BaseResultMap" type="com.cn.phoenix.api.pojo.ApiConfig">
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="host_id" jdbcType="INTEGER" property="hostId"/>
+        <result column="aes_key" jdbcType="VARCHAR" property="aesKey"/>
+        <result column="app_id" jdbcType="VARCHAR" property="appId"/>
+        <result column="secret_key" jdbcType="VARCHAR" property="secretKey"/>
+        <result column="is_use" jdbcType="INTEGER" property="isUse"/>
+        <result column="api_config_status" jdbcType="INTEGER" property="status"/>
+        <result column="api_config_info" jdbcType="VARCHAR" property="info"/>
+        <result column="api_config_create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="api_config_update_time" jdbcType="TIMESTAMP" property="updateTime"/>
+    </resultMap>
+    <sql id="Base_Column_List">
+    id, host_id, aes_key, app_id, secret_key,is_use,status,info, create_time, update_time
+  </sql>
+    <select id="selectByHostId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from api_config where host_id = #{hostId}
+    </select>
+    <select id="selectById" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from api_config where id = #{id}
+    </select>
+    <insert id="oneInsert" parameterType="com.cn.phoenix.api.pojo.ApiConfig">
+        <selectKey keyProperty="id" order="AFTER" resultType="java.lang.Integer">
+            SELECT LAST_INSERT_ID()
+        </selectKey>
+        insert into api_config (host_id,aes_key,app_id,secret_key,is_use,status,info)
+        values
+        (#{hostId,jdbcType=INTEGER},#{aesKey,jdbcType=VARCHAR},#{appId,jdbcType=VARCHAR},
+        #{secretKey,jdbcType=VARCHAR},#{isUse,jdbcType=INTEGER},#{status,jdbcType=INTEGER},
+        #{info,jdbcType=VARCHAR})
+    </insert>
+    <update id="oneUpdate" parameterType="com.cn.phoenix.api.pojo.ApiConfig">
+        update api_config set
+        aes_key = #{aesKey,jdbcType=VARCHAR},
+        app_id = #{appId,jdbcType=VARCHAR},
+        secret_key = #{secretKey,jdbcType=VARCHAR},
+        is_use = #{isUse,jdbcType=INTEGER},
+        status = #{status,jdbcType=INTEGER},
+        info = #{info,jdbcType=VARCHAR}
+        where id = #{id}
+    </update>
+    <delete id="oneDelete" parameterType="com.cn.phoenix.api.pojo.ApiConfig">
+        delete from api_config where id = #{id}
+    </delete>
+    <select id="onlyIsUse" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from api_config
+        where is_use = 1 and host_id = #{hostId}
+    </select>
+</mapper>
