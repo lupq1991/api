@@ -33,7 +33,7 @@ public class HttpUtil {
      * @param url
      * @param requestType
      * @param parameter
-     * @return
+     * @return 返回接口请求结果
      */
     public static HttpPojo doService(String url, int requestType, int contentType,
                                      String parameter, Map<String, String> headerMap) {

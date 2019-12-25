@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,10 +38,14 @@ public class GroupController {
     final
     private UserGroupService userGroupService;
 
+    final
+    private HttpSession httpSession;
+
     @Autowired
-    public GroupController(GroupService groupService, UserGroupService userGroupService) {
+    public GroupController(GroupService groupService, UserGroupService userGroupService,HttpSession httpSession) {
         this.groupService = groupService;
         this.userGroupService = userGroupService;
+        this.httpSession = httpSession;
     }
 
 
@@ -50,7 +55,7 @@ public class GroupController {
     public APIResponse<ItemsPojo> getApi(Integer page, Integer limit) {
         BaseController<Group> baseController = new BaseController<>();
         //获取userId
-        Integer userId = HandleUser.getUserId();
+        Integer userId = HandleUser.getUserId(httpSession);
 
         List<Group> groupList = groupService.selectGroupByUser(page, limit, userId);
 
@@ -70,7 +75,7 @@ public class GroupController {
 
                 // 插入用户与组的关联
                 Integer groupId = group.getId();
-                Integer userId = HandleUser.getUserId();
+                Integer userId = HandleUser.getUserId(httpSession);
                 UserGroup userGroup = new UserGroup();
                 userGroup.setUserId(userId);
                 userGroup.setGroupId(groupId);
@@ -96,7 +101,7 @@ public class GroupController {
             return APIResponse.getErrorResponse(ResponseCode.DATA_NULL, "");
         }
         // 获取当前用户id
-        Integer userId = HandleUser.getUserId();
+        Integer userId = HandleUser.getUserId(httpSession);
         group.setUserId(userId);
         if (groupService.selectGroupHaveOtherUser(group).size() > 0) {
             return APIResponse.getErrorResponse(ResponseCode.DATA_CUSTOM, "组里还有其他成员,不能删除!");

@@ -21,7 +21,7 @@ public enum ResponseCode {
 
     USER_PASSWORD_NO(400, "用户或密码错误!"),
 
-    PARAMETER_LACK(400, "缺少必填参数:"),
+    PARAMETER_LACK(400, "参数必须存在:"),
     PARAMETER_MUST_ONE(400, "必须有一个参数存在:"),
 
     PARAMETER_INVALID(400, "参数无效:"),

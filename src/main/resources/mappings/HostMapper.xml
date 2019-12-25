@@ -50,7 +50,7 @@
             #{item}
         </foreach>
         <if test="id != null">
-            where id = #{id}
+            and id = #{id}
         </if>
         order by id desc
     </select>

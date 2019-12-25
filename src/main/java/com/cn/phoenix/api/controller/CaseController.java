@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 @RestController
@@ -34,6 +35,9 @@ public class CaseController {
     @Autowired
     CheckService checkService;
 
+    @Autowired
+    HttpSession httpSession;
+
     @UserLoginToken
     @ApiOperation(value = "获取用例和参数,可通过apiId获取", notes = "获取用例")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
@@ -42,7 +46,7 @@ public class CaseController {
         if (baseController.isPageNull(page, limit) != null) {
             return baseController.isPageNull(page, limit);
         }
-        List<Integer> projectIdList = HandleUser.getProjectIdByUser();
+        List<Integer> projectIdList = HandleUser.getProjectIdByUser(httpSession);
         Cases cases = new Cases();
         cases.setProjectIdList(projectIdList);
         cases.setApiId(apiId);

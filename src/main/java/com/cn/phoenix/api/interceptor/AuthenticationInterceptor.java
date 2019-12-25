@@ -32,8 +32,6 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest httpServletRequest,
                              HttpServletResponse httpServletResponse, Object object) {
 
-        HandleUser.user = null;
-
         //从header头获取token
         String token = httpServletRequest.getHeader("API-Token");
         // 如果不是映射到方法直接通过
@@ -89,7 +87,6 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
                         returnJson(httpServletResponse, jsonObject);
                         return false;
                     }
-                    HandleUser.user = user;
                     return true;
                 }
             }

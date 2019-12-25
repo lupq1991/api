@@ -17,23 +17,37 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.*;
 
 @RestController
 @RequestMapping(value = "/api")
 public class ApiController {
 
-    @Autowired
-    ApiService apiService;
+    final
+    private ApiService apiService;
+
+    final
+    private ProjectService apiGroupService;
+
+    final
+    private CaseService caseService;
+
+    final
+    private HttpServletRequest request;
+
+    final
+    private HttpSession httpSession;
 
     @Autowired
-    ProjectService apiGroupService;
-
-    @Autowired
-    CaseService caseService;
-
-    @Autowired
-    DictionaryService dictionaryService;
+    public ApiController(ApiService apiService, ProjectService apiGroupService, CaseService caseService, HttpServletRequest request, HttpSession httpSession) {
+        this.apiService = apiService;
+        this.apiGroupService = apiGroupService;
+        this.caseService = caseService;
+        this.request = request;
+        this.httpSession = httpSession;
+    }
 
     @UserLoginToken
     @ApiOperation(value = "获取接口信息", notes = "获取接口信息")
@@ -42,8 +56,7 @@ public class ApiController {
 
         ItemsPojo<Project> itemsPojo = new ItemsPojo<>();
         Project project = new Project();
-        project.setProjectIdList(HandleUser.getProjectIdByUser());
-
+        project.setProjectIdList(HandleUser.getProjectIdByUser(httpSession));
         List<Project> apiGroupList = apiGroupService.selectAllProjectAndApi(project);
 
         itemsPojo.setItems(apiGroupList);
@@ -65,7 +78,7 @@ public class ApiController {
         }
         Api api = new Api();
 
-        List<Integer> projectIdList = HandleUser.getProjectIdByUser();
+        List<Integer> projectIdList = HandleUser.getProjectIdByUser(httpSession);
 
         if (projectIdList.size() == 0) {
             return APIResponse.getSuccResponse();

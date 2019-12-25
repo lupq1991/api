@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,9 +17,6 @@ import java.util.List;
  */
 @Component
 public class HandleUser {
-
-    static User user;
-
 
     private UserGroupService userGroupService;
 
@@ -37,38 +35,39 @@ public class HandleUser {
     /**
      * @return 根据userID返回对应的项目id
      */
-    public static List<Integer> getProjectIdByUser() {
+    public static List<Integer> getProjectIdByUser(HttpSession httpSession) {
         List<Integer> projectList = new ArrayList<>();
-        Integer userId = user.getId();
-        if (user != null) {
-            List<UserGroup> userGroupList = userGroupServiceStatic.selectUserAndProjectByUserId(userId);
-            for (UserGroup userGroup : userGroupList) {
-                projectList.add(userGroup.getProjectId());
-            }
+        Integer userId = (Integer) httpSession.getAttribute("userId");
+        List<UserGroup> userGroupList = userGroupServiceStatic.selectUserAndProjectByUserId(userId);
+        for (UserGroup userGroup : userGroupList) {
+            projectList.add(userGroup.getProjectId());
         }
+        if (projectList.size() > 0) {
+            return projectList;
+        }
+        projectList.add(null);
         return projectList;
     }
 
     /**
-     *
      * @return 根据userID返回对应的组id
      */
-    public static List<Integer> getGroupIdByUser() {
+    public static List<Integer> getGroupIdByUser(HttpSession httpSession) {
         List<Integer> groupIdList = new ArrayList<>();
-        Integer userId = user.getId();
-        if (user != null) {
-            List<UserGroup> userGroupList = userGroupServiceStatic.selectUserAndProjectByUserId(userId);
-            for (UserGroup userGroup : userGroupList) {
-                groupIdList.add(userGroup.getGroupId());
-            }
+        Integer userId = (Integer) httpSession.getAttribute("userId");
+        List<UserGroup> userGroupList = userGroupServiceStatic.selectUserAndProjectByUserId(userId);
+        for (UserGroup userGroup : userGroupList) {
+            groupIdList.add(userGroup.getGroupId());
         }
+        if (groupIdList.size() > 0) {
+            return groupIdList;
+        }
+        groupIdList.add(null);
         return groupIdList;
     }
 
-    /**
-     * @return 返回用户id
-     */
-    public static int getUserId() {
-        return user.getId();
+    public static Integer getUserId(HttpSession httpSession) {
+        return (Integer) httpSession.getAttribute("userId");
     }
+
 }

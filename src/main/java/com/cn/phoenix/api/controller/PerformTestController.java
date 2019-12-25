@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpSession;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
@@ -46,8 +47,14 @@ public class PerformTestController {
     final
     private CheckService checkService;
 
+    final
+    private HttpSession httpSession;
+
     @Autowired
-    public PerformTestController(HostService hostService, ApiService apiService, CaseService caseService, ParameterService parameterService, TestResultService testResultService, RunHttpService runHttpService, HeaderService headerService, CheckService checkService) {
+    public PerformTestController(HostService hostService, ApiService apiService,
+                                 CaseService caseService, ParameterService parameterService,
+                                 TestResultService testResultService, RunHttpService runHttpService,
+                                 HeaderService headerService, CheckService checkService, HttpSession httpSession) {
         this.hostService = hostService;
         this.apiService = apiService;
         this.caseService = caseService;
@@ -56,6 +63,7 @@ public class PerformTestController {
         this.runHttpService = runHttpService;
         this.headerService = headerService;
         this.checkService = checkService;
+        this.httpSession = httpSession;
     }
 
     @UserLoginToken
@@ -71,7 +79,7 @@ public class PerformTestController {
             return baseController.isPageNull(page, limit);
         }
 
-        List<Integer> projectIdList = HandleUser.getProjectIdByUser();
+        List<Integer> projectIdList = HandleUser.getProjectIdByUser(httpSession);
 
         TestResult testResult = new TestResult();
         testResult.setProjectIdList(projectIdList);

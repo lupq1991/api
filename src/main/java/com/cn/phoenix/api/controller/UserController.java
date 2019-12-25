@@ -7,27 +7,40 @@ import com.cn.phoenix.api.result.ResponseCode;
 import com.cn.phoenix.api.service.TokenService;
 import com.cn.phoenix.api.service.UserService;
 import io.swagger.annotations.ApiOperation;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.UsernamePasswordToken;
+import org.apache.shiro.subject.Subject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author lupq
+ * @date 2019/12/21 20:01
+ */
 @RestController
 public class UserController {
 
-    @Autowired
-    UserService userService;
+    final
+    private UserService userService;
+
+    final
+    private TokenService tokenService;
 
     @Autowired
-    TokenService tokenService;
+    public UserController(UserService userService, TokenService tokenService) {
+        this.userService = userService;
+        this.tokenService = tokenService;
+    }
 
     @ApiOperation(value = "登录", notes = "登录")
     @RequestMapping(value = "/user/login", method = RequestMethod.POST)
-    public APIResponse<User> login(@RequestBody User requestUser, HttpServletResponse httpServletResponse) {
+    public APIResponse<User> login(@RequestBody User requestUser, HttpSession httpSession) {
         User userForBase = userService.findByUsername(requestUser);
 
         if (userForBase == null) {
@@ -37,7 +50,12 @@ public class UserController {
             return APIResponse.getErrorResponse(ResponseCode.USER_PASSWORD_NO, "");
         }
 
+        // 获取token
         String token = tokenService.getToken(userForBase.getSecretKey(), userForBase.getUsername());
+        // 把user存到session中
+        httpSession.setAttribute("user", userForBase.getUsername());
+        httpSession.setAttribute("userId", userForBase.getId());
+
         userForBase.setToken(token);
         APIResponse<User> apiResponse = APIResponse.getSuccResponse();
         apiResponse.setData(userForBase);

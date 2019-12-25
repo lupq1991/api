@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpSession;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,10 +27,17 @@ import java.util.Map;
 @RequestMapping("/host")
 public class HostController {
 
+    final
+    private HostService hostService;
+
+    final
+    private HttpSession httpSession;
+
     @Autowired
-    HostService hostService;
-    @Autowired
-    DictionaryService dictionaryService;
+    public HostController(HostService hostService, HttpSession httpSession) {
+        this.hostService = hostService;
+        this.httpSession = httpSession;
+    }
 
 
     @UserLoginToken
@@ -37,7 +45,7 @@ public class HostController {
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public APIResponse<ItemsPojo> getHost(Integer page, Integer limit) {
 
-        List<Integer> projectIdList = HandleUser.getProjectIdByUser();
+        List<Integer> projectIdList = HandleUser.getProjectIdByUser(httpSession);
         Host host = new Host();
         host.setProjectIdList(projectIdList);
 
@@ -82,8 +90,7 @@ public class HostController {
     @UserLoginToken
     @ApiOperation(value = "更新环境信息", notes = "更新环境信息")
     @RequestMapping(value = "/update", method = RequestMethod.POST)
-    public APIResponse<Host> updateHost(@RequestBody Host host) {
-
+    public APIResponse<Host> updateHost(@RequestBody Host host, HttpSession httpSession) {
         if (host.getId() == null) {
             return APIResponse.getErrorResponse(ResponseCode.PARAMETER_LACK, "id");
         }
@@ -97,7 +104,6 @@ public class HostController {
         }
 
         if (!StringUtils.isBlank(host.getRunHost())) {
-            System.out.println(hostService.checkUnique(host).size());
             if (hostService.checkUnique(host).size() > 0) {
                 return APIResponse.getErrorResponse(ResponseCode.DATA_REPEAT, host.getRunHost());
             }

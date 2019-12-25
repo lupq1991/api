@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpSession;
 import java.util.List;
 
 /**
@@ -27,6 +28,9 @@ public class ProjectController {
     @Autowired
     ProjectService projectService;
 
+    @Autowired
+    HttpSession httpSession;
+
     @UserLoginToken
     @ApiOperation(value = "获取接口项目信息", notes = "获取接口项目信息")
     @RequestMapping(value = "/list", method = RequestMethod.GET)
@@ -36,7 +40,8 @@ public class ProjectController {
         if (baseController.isPageNull(page, limit) != null) {
             return baseController.isPageNull(page, limit);
         }
-        List<Integer> projectIdList = HandleUser.getProjectIdByUser();
+        List<Integer> projectIdList = HandleUser.getProjectIdByUser(httpSession);
+
         Project project = new Project();
         project.setProjectIdList(projectIdList);
 

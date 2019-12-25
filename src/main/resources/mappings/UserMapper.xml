@@ -2,15 +2,15 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.cn.phoenix.api.dao.UserMapper">
     <resultMap id="BaseResultMap" type="com.cn.phoenix.api.pojo.User">
-        <id column="id" jdbcType="INTEGER" property="id" />
-        <result column="username" jdbcType="VARCHAR" property="username" />
-        <result column="password" jdbcType="VARCHAR" property="password" />
-        <result column="real_name" jdbcType="VARCHAR" property="realName" />
-        <result column="create_user_id" jdbcType="INTEGER" property="createUserId" />
-        <result column="status" jdbcType="INTEGER" property="status" />
-        <result column="secret_key" jdbcType="VARCHAR" property="secretKey" />
-        <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
-        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime" />
+        <id column="id" jdbcType="INTEGER" property="id"/>
+        <result column="username" jdbcType="VARCHAR" property="username"/>
+        <result column="password" jdbcType="VARCHAR" property="password"/>
+        <result column="real_name" jdbcType="VARCHAR" property="realName"/>
+        <result column="create_user_id" jdbcType="INTEGER" property="createUserId"/>
+        <result column="status" jdbcType="INTEGER" property="status"/>
+        <result column="secret_key" jdbcType="VARCHAR" property="secretKey"/>
+        <result column="create_time" jdbcType="TIMESTAMP" property="createTime"/>
+        <result column="update_time" jdbcType="TIMESTAMP" property="updateTime"/>
     </resultMap>
     <sql id="Base_Column_List">
     id, username, password, real_name, create_user_id, status, secret_key, create_time,
@@ -18,15 +18,16 @@
   </sql>
     <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
         select
-        <include refid="Base_Column_List" />
+        <include refid="Base_Column_List"/>
         from user
         where id = #{id,jdbcType=INTEGER}
     </select>
     <select id="findByUsername" resultType="com.cn.phoenix.api.pojo.User">
-      SELECT id,password,secret_key,username
-      FROM user
-      WHERE
-      username=#{username}
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM user
+        WHERE
+        username = #{username}
     </select>
     <select id="findUserById" resultType="com.cn.phoenix.api.pojo.User">
         SELECT username,password,secret_key
